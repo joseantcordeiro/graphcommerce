@@ -6,11 +6,11 @@
     "graph",
     "commerce"
   ],
-  "author": "José Cordeiro <jose@open4sustainability.com>",
+  "author": "José Cordeiro <joseantcordeiro@pm.me>",
   "homepage": "https://github.com/joseantcordeiro/graphcommerce#readme",
   "license": "GPL-3.0",
-  "main": "lib/index.js",
-	"typings": "lib/index.d.ts",
+  "main": "lib/main.js",
+  "typings": "lib/main.d.ts",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -18,7 +18,7 @@
   "files": [
     "lib"
   ],
-	"publishConfig": {
+  "publishConfig": {
     "access": "public"
   },
   "repository": {
@@ -26,10 +26,17 @@
     "url": "git+https://github.com/joseantcordeiro/graphcommerce.git"
   },
   "scripts": {
-		"tsc": "tsc",
+    "tsc": "tsc",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
     "url": "https://github.com/joseantcordeiro/graphcommerce/issues"
+  },
+  "dependencies": {
+    "@nestjs/common": "^8.4.4",
+    "@nestjs/core": "^8.4.4",
+    "@nestjs/platform-express": "^8.4.4",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.5.5"
   }
 }
