@@ -8,6 +8,7 @@ import { LoggerMiddleware } from './middleware/logger';
 import { AuthModule } from './module/auth';
 import { PersonModule } from './module/person';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { OrganizationModule } from './module/organization';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     }),
 		TerminusModule,
 		PersonModule,
+		OrganizationModule
 	],
   controllers: [HealthController],
   providers: [DatabaseHealthIndicator],
