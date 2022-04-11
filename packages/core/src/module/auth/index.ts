@@ -8,11 +8,13 @@ import {
 import { AuthMiddleware } from '../../middleware/auth';
 import { ConfigInjectionToken, AuthModuleConfig } from '../../config/auth';
 import { SupertokensService } from '../../service/supertokens';
+import { AuthService } from '../../service/auth';
+import { AuthController } from '../../controller/auth';
 
 @Module({
-  providers: [SupertokensService],
+  providers: [SupertokensService, AuthService],
   exports: [],
-  controllers: [],
+  controllers: [AuthController],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

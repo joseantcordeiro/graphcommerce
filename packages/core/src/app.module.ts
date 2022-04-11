@@ -2,18 +2,17 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { Neo4jModule } from 'nest-neo4j/dist';
-import { AppController } from './controller/app.controller';
 import { HealthController } from './controller/health';
 import { DatabaseHealthIndicator } from './controller/health/indicator/db';
 import { LoggerMiddleware } from './middleware/logger';
 import { AuthModule } from './module/auth';
-import { AuthController } from './controller/auth'
-import { AuthService } from './service/auth'
-import { AppService } from './service/app.service';
+import { PersonModule } from './module/person';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
+		EventEmitterModule.forRoot(),
 		Neo4jModule.fromEnv(),
 		AuthModule.forRoot({
       connectionURI: 'http://192.168.1.81:3567/tokens',
@@ -26,9 +25,10 @@ import { AppService } from './service/app.service';
       },
     }),
 		TerminusModule,
+		PersonModule,
 	],
-  controllers: [AppController, HealthController, AuthController],
-  providers: [AppService, DatabaseHealthIndicator, AuthService],
+  controllers: [HealthController],
+  providers: [DatabaseHealthIndicator],
 })
 export class AppModule {
 	configure(consumer: MiddlewareConsumer) {

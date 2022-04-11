@@ -3,9 +3,6 @@ import { SessionInfoDto } from '../../dto/sessioninfo'
 
 @Injectable()
 export class AuthService {
-  getHello(): string {
-    return 'Hello World!';
-  }
 
 	getSessionInfo(session: any): SessionInfoDto {
     return new SessionInfoDto(
