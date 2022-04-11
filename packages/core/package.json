@@ -41,7 +41,8 @@
     "neo4j-driver": "^4.4.5",
     "nest-neo4j": "^0.1.5",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.5.5"
+    "rxjs": "^7.5.5",
+    "supertokens-node": "^9.1.2"
   },
   "devDependencies": {
     "@nestjs/testing": "^8.4.4",
