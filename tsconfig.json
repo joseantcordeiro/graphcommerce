@@ -9,6 +9,12 @@
 		"experimentalDecorators": true,
 		"target": "es6",
 		"sourceMap": true,
+		"incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
 		"lib": [
 			"es6"
 		]
