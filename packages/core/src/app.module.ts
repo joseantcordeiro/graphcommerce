@@ -10,6 +10,7 @@ import { AuthModule } from './module/auth';
 import { PersonModule } from './module/person';
 import { OrganizationModule } from './module/organization';
 import { CountriesModule } from './module/countries';
+import { CurrenciesModule } from './module/currencies';
 
 @Module({
   imports: [
@@ -27,9 +28,10 @@ import { CountriesModule } from './module/countries';
       },
     }),
 		TerminusModule,
+		CountriesModule,
+		CurrenciesModule,
 		PersonModule,
 		OrganizationModule,
-		CountriesModule,
 	],
   controllers: [HealthController],
   providers: [DatabaseHealthIndicator],
