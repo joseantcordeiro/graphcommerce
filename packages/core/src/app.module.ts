@@ -11,6 +11,7 @@ import { PersonModule } from './module/person';
 import { OrganizationModule } from './module/organization';
 import { CountriesModule } from './module/countries';
 import { CurrenciesModule } from './module/currencies';
+import { LanguagesModule } from './module/languages';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CurrenciesModule } from './module/currencies';
 		TerminusModule,
 		CountriesModule,
 		CurrenciesModule,
+		LanguagesModule,
 		PersonModule,
 		OrganizationModule,
 	],
