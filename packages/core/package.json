@@ -41,6 +41,7 @@
     "@nestjs/terminus": "^8.0.6",
     "neo4j-driver": "^4.4.5",
     "nest-neo4j": "^0.1.5",
+    "nestjs-minio-client": "^1.1.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.5.5",
     "supertokens-node": "^9.1.2"

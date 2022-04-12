@@ -7,6 +7,7 @@ import { HealthController } from './controller/health';
 import { DatabaseHealthIndicator } from './controller/health/indicator/db';
 import { LoggerMiddleware } from './middleware/logger';
 import { AuthModule } from './module/auth';
+import { ImageUploadModule } from './module/image-upload';
 import { PersonModule } from './module/person';
 import { OrganizationModule } from './module/organization';
 import { CountriesModule } from './module/countries';
@@ -20,6 +21,7 @@ import { LanguagesModule } from './module/languages';
 		Neo4jModule.fromEnv(),
 		AuthModule.fromEnv(),
 		TerminusModule,
+		ImageUploadModule,
 		CountriesModule,
 		CurrenciesModule,
 		LanguagesModule,
