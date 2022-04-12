@@ -5,12 +5,15 @@ import { CreatePersonDto } from '../../dto/person/create';
 import { UpdatePersonDto } from '../../dto/person/update';
 import { PersonCreatedEvent } from '../../event/person/created';
 import { Person } from '../../entity/person';
+import { MinioClientService } from '../minio-client';
+import { BufferedFile } from '../../entity/file';
 
 @Injectable()
 export class PersonService {
   constructor(
     private readonly neo4jService: Neo4jService,
     private readonly eventEmitter: EventEmitter2,
+		private minioClientService: MinioClientService,
   ) {}
   /** 
   async userTeams(userId: string): Promise<Response | undefined> {
@@ -117,4 +120,23 @@ export class PersonService {
       { userId },
     );
   }
+
+	async uploadPicture(userId: string, image: BufferedFile): Promise<any> {
+		const uploaded_image = await this.minioClientService.upload(image);
+		const picture = uploaded_image.url;
+
+		const res = await this.neo4jService.write(
+			`
+					MATCH (p:Person { id: $userId })
+					SET p.picture = $picture, p.updatedAt = datetime()
+					RETURN p.picture AS profile_picture
+				`,
+			{ userId, picture },
+		);
+
+		return {
+			profile_picture: res.records[0].get('profile_picture'),
+			message: "Profile picture updated successfully."
+		};
+	}
 }

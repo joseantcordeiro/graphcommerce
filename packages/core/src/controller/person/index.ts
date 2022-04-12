@@ -5,7 +5,9 @@ import {
   Get,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+	UseInterceptors,
 } from '@nestjs/common';
 import { CreatePersonDto } from '../../dto/person/create';
 import { UpdatePersonDto } from '../../dto/person/update';
@@ -13,6 +15,8 @@ import { PersonService } from '../../service/person';
 import { Session } from '../../decorator/session';
 import { AuthGuard } from '../../guard/auth';
 import { SessionContainer } from 'supertokens-node/recipe/session';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { BufferedFile } from '../../entity/file';
 
 @Controller('person')
 export class PersonController {
@@ -69,4 +73,11 @@ export class PersonController {
       ...deleted.toJson(),
     };
   }
+
+	@UseGuards(AuthGuard)
+	@Post('picture')
+	@UseInterceptors(FileInterceptor('image'))
+	async uploadAvatar(@Session() session: SessionContainer, @UploadedFile() image: BufferedFile) {
+		return this.personService.uploadPicture(session.getUserId(), image);
+	}
 }
