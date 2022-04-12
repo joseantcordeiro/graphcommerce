@@ -18,16 +18,7 @@ import { LanguagesModule } from './module/languages';
 		ConfigModule.forRoot({ isGlobal: true }),
 		EventEmitterModule.forRoot(),
 		Neo4jModule.fromEnv(),
-		AuthModule.forRoot({
-      connectionURI: 'http://192.168.1.81:3567/tokens',
-      apiKey:
-        'sjnNfRVaBPXbYwJ00jAbE280K5wWR8byekTdx7mRgxZSv430qwiE5Poh2bCKeyjD',
-      appInfo: {
-        appName: 'Graph Commerce',
-        apiDomain: 'http://localhost:8000',
-        websiteDomain: 'http://localhost:3000',
-      },
-    }),
+		AuthModule.fromEnv(),
 		TerminusModule,
 		CountriesModule,
 		CurrenciesModule,

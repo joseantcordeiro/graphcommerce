@@ -10,6 +10,7 @@ import { ConfigInjectionToken, AuthModuleConfig } from '../../config/auth';
 import { SupertokensService } from '../../service/supertokens';
 import { AuthService } from '../../service/auth';
 import { AuthController } from '../../controller/auth';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   providers: [SupertokensService, AuthService],
@@ -42,4 +43,30 @@ export class AuthModule implements NestModule {
       module: AuthModule,
     };
   }
+
+	static fromEnv(): DynamicModule {
+		const config = new ConfigService()
+		const appInfo = {
+			appName: config.get<string>('AUTH_APP_NAME'),
+			apiDomain: config.get<string>('AUTH_API_DOMAIN'),
+			websiteDomain: config.get<string>('AUTH_WEBSITE_DOMAIN')
+		}
+		const connectionURI = config.get<string>('AUTH_URI');
+		const apiKey = config.get<string>('AUTH_API_KEY');
+		return {
+			providers: [
+        {
+          useValue: {
+            appInfo,
+            connectionURI,
+            apiKey,
+          },
+          provide: ConfigInjectionToken,
+        },
+      ],
+      exports: [],
+      imports: [],
+      module: AuthModule,
+		}
+	}
 }
