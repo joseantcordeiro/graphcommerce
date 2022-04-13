@@ -13,7 +13,6 @@ import { UpdateOrganizationDto } from '../../dto/organization/update';
 import { AuthGuard } from '../../guard/auth';
 import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
-import { PersonService } from '../../service/person';
 
 @Controller('organization')
 export class OrganizationController {

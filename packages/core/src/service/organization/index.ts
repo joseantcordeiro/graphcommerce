@@ -27,7 +27,7 @@ export class OrganizationService {
       );
   }
 
-	async getOrganizationRoles(userId: string, organizationId: string): Promise<string[] | undefined> {
+	async getOrganizationRoles(userId: string, organizationId: string): Promise<string[]> {
 		const res = await this.neo4jService.read(
 			`
 					MATCH (p:Person { id: $userId })-[r:WORKS_AT]->(o:Organization { id: $organizationId })
@@ -35,7 +35,7 @@ export class OrganizationService {
 				`,
 			{ userId, organizationId },
 		);
-		return res.records.length ? res.records[0].get('r.role') : undefined;
+		return res.records.length ? res.records[0].get('r.role') : [];
 	}
 
   async create(
