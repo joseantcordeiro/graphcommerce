@@ -29,8 +29,11 @@ export class PersonController {
     @Body() properties: CreatePersonDto,
   ) {
     const userId = session.getUserId();
-    // TODO: Validate if user have correct role to create staff
-    const created = await this.personService.create(properties);
+		if (userId === properties.userId) {
+			const created this.personService.create(properties);
+		} else {
+			const created = await this.personService.createStaff(properties);
+		}
     return {
       ...created.toJson(),
     };
@@ -53,15 +56,15 @@ export class PersonController {
     @Body() properties: UpdatePersonDto,
   ) {
     const userId = session.getUserId();
-    // TODO: add validation
-    //if (userId === properties.userId) {
-    const updated = await this.personService.update(properties);
-    //} else {
-    //  const uptated = await this.personService.updateStaff(userId, properties);
-    //}
-    return {
-      ...updated.toJson(),
-    };
+    if (userId === properties.userId) {
+    	const updated = await this.personService.update(properties);
+			return {
+				...updated.toJson(),
+			};
+    } else {
+			return { message: 'Not allowed' };
+    }
+    
   }
 
   @UseGuards(AuthGuard)

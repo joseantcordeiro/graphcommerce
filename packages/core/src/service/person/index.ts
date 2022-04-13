@@ -56,14 +56,38 @@ export class PersonService {
     return res.records.length ? new Person(res.records[0].get('p')) : undefined;
   }
 
-  async create(properties: CreatePersonDto): Promise<Person | undefined> {
+	async create(properties: CreatePersonDto): Promise<Person | undefined> {
     const personCreated = this.neo4jService
       .write(
         `
 						MATCH (l:Language { alpha_2: $.properties.defaultLanguage })
 						WITH l
             CREATE (p:Person { id: $properties.userId })
-            SET u += $properties
+            SET u += $properties, createdAt = datetime()
+						CREATE (l)-[:DEFAULT_LANGUAGE]->(p)
+            RETURN p
+        `,
+        {
+          properties,
+        },
+      )
+      .then((res) => new Person(res.records[0].get('p')));
+
+    // Emit People Created Event
+    const personCreatedEvent = new PersonCreatedEvent();
+    personCreatedEvent.id = (await personCreated).getId();
+    this.eventEmitter.emit('person.created', personCreatedEvent);
+    return personCreated;
+  }
+
+  async createStaff(properties: CreatePersonDto): Promise<Person | undefined> {
+    const personCreated = this.neo4jService
+      .write(
+        `
+						MATCH (l:Language { alpha_2: $.properties.defaultLanguage })
+						WITH l
+            CREATE (p:Person { id: $properties.userId, createdAt: datetime() })
+            SET p.name = $properties.name
 						CREATE (p)-[:WORKS_AT { since: datetime() }]->(o:Organization { id: $properties.organizationId })
 						CREATE (l)-[:DEFAULT_LANGUAGE]->(p)
             RETURN p
@@ -89,22 +113,6 @@ export class PersonService {
             RETURN p
         `,
       { properties },
-    );
-    // TODO: Emit Person Updated Event
-    return new Person(res.records[0].get('p'));
-  }
-
-  async updateStaff(
-    userId: string,
-    properties: UpdatePersonDto,
-  ): Promise<Person | undefined> {
-    const res = await this.neo4jService.write(
-      `
-            MATCH (p:Person { id: $properties.userId })
-            SET p.name = $properties.name, p.updatedAt = datetime()
-            RETURN p
-        `,
-      { userId, properties },
     );
     // TODO: Emit Person Updated Event
     return new Person(res.records[0].get('p'));
