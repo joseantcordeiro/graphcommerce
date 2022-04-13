@@ -1,9 +1,13 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, Length, MinLength } from 'class-validator';
 
 export class UpdatePersonDto {
   @IsNotEmpty()
   @IsString()
   userId: string;
+
+	@IsNotEmpty()
+	@IsEmail()
+	email: string;
 
   @IsNotEmpty()
   @IsString()
@@ -14,10 +18,7 @@ export class UpdatePersonDto {
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(2, {
-    message: 'Use a valid alpha 2 language code',
-  })
-  @MaxLength(2, {
+	@Length(2, 2, {
     message: 'Use a valid alpha 2 language code',
   })
   defaultLanguage: string;

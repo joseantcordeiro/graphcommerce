@@ -17,6 +17,7 @@ import { AuthGuard } from '../../guard/auth';
 import { SessionContainer } from 'supertokens-node/recipe/session';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BufferedFile } from '../../entity/file';
+import { Person } from '../../entity/person';
 
 @Controller('person')
 export class PersonController {
@@ -30,24 +31,24 @@ export class PersonController {
   ) {
     const userId = session.getUserId();
 		if (userId === properties.userId) {
-			const created this.personService.create(properties);
+			return this.personService.create(properties);
 		} else {
-			const created = await this.personService.createStaff(properties);
+			return this.personService.createStaff(properties);
 		}
-    return {
-      ...created.toJson(),
-    };
   }
 
   @UseGuards(AuthGuard)
   @Get()
   async getPerson(@Session() session: SessionContainer) {
     const userId = session.getUserId();
-    const created = await this.personService.get(userId);
-    return {
-      ...created.toJson(),
-    };
+    return this.personService.get(userId);
   }
+
+	@UseGuards(AuthGuard)
+	@Get('find')
+	async findPerson(@Body() body: { email: string }) {
+		return this.personService.find(body.email);
+	}
 
   @UseGuards(AuthGuard)
   @Patch()
@@ -57,14 +58,10 @@ export class PersonController {
   ) {
     const userId = session.getUserId();
     if (userId === properties.userId) {
-    	const updated = await this.personService.update(properties);
-			return {
-				...updated.toJson(),
-			};
+    	return this.personService.update(properties);
     } else {
 			return { message: 'Not allowed' };
     }
-    
   }
 
   @UseGuards(AuthGuard)

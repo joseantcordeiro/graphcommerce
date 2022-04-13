@@ -57,13 +57,13 @@ export class PersonService {
   }
 
 	async create(properties: CreatePersonDto): Promise<Person | undefined> {
-    const personCreated = this.neo4jService
+    const personCreated = await this.neo4jService
       .write(
         `
-						MATCH (l:Language { alpha_2: $.properties.defaultLanguage })
+						MATCH (l:Language { alpha_2: $properties.defaultLanguage })
 						WITH l
             CREATE (p:Person { id: $properties.userId })
-            SET u += $properties, createdAt = datetime()
+            SET p.name = $properties.name, p.email = $properties.email, p.createdAt = datetime()
 						CREATE (l)-[:DEFAULT_LANGUAGE]->(p)
             RETURN p
         `,
@@ -75,19 +75,19 @@ export class PersonService {
 
     // Emit People Created Event
     const personCreatedEvent = new PersonCreatedEvent();
-    personCreatedEvent.id = (await personCreated).getId();
+    personCreatedEvent.id = personCreated.getId();
     this.eventEmitter.emit('person.created', personCreatedEvent);
     return personCreated;
   }
 
   async createStaff(properties: CreatePersonDto): Promise<Person | undefined> {
-    const personCreated = this.neo4jService
+    const personCreated = await this.neo4jService
       .write(
         `
 						MATCH (l:Language { alpha_2: $.properties.defaultLanguage })
 						WITH l
-            CREATE (p:Person { id: $properties.userId, createdAt: datetime() })
-            SET p.name = $properties.name
+            CREATE (p:Person { id: $properties.userId })
+            SET p.name = $properties.name, p.email = $properties.email, p.createdAt: datetime()
 						CREATE (p)-[:WORKS_AT { since: datetime() }]->(o:Organization { id: $properties.organizationId })
 						CREATE (l)-[:DEFAULT_LANGUAGE]->(p)
             RETURN p
@@ -100,7 +100,7 @@ export class PersonService {
 
     // Emit People Created Event
     const personCreatedEvent = new PersonCreatedEvent();
-    personCreatedEvent.id = (await personCreated).getId();
+    personCreatedEvent.id = personCreated.getId();
     this.eventEmitter.emit('person.created', personCreatedEvent);
     return personCreated;
   }
@@ -109,7 +109,7 @@ export class PersonService {
     const res = await this.neo4jService.write(
       `
             MATCH (p:Person { id: $properties.userId })
-            SET p.name = $properties.name, p.updatedAt = datetime()
+            SET p.name = $properties.name, p.email = $properties.email, p.updatedAt = datetime()
             RETURN p
         `,
       { properties },

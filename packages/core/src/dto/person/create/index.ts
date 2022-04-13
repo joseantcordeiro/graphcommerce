@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePersonDto {
   @IsNotEmpty()
@@ -8,6 +8,10 @@ export class CreatePersonDto {
   @IsNotEmpty()
   @IsString()
   userId: string;
+
+	@IsNotEmpty()
+	@IsEmail()
+	email: string;
 
   @IsNotEmpty()
   @IsString()
@@ -26,3 +30,4 @@ export class CreatePersonDto {
   })
   defaultLanguage: string;
 }
+
