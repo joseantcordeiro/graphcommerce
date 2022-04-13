@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, Length, MaxLength, MinLength } from 'class-validator';
 
 export class CreateOrganizationDto {
   @IsNotEmpty()
@@ -10,30 +10,21 @@ export class CreateOrganizationDto {
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(2, {
-    message: 'Use a valid ISO 2 country code',
-  })
-  @MaxLength(2, {
+  @Length(2, 2, {
     message: 'Use a valid ISO 2 country code',
   })
   defaultCountry: string;
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(3, {
-    message: 'Use a valid 3 character currency code',
-  })
-  @MaxLength(3, {
+  @Length(3, 3, {
     message: 'Use a valid 3 character currency code',
   })
   defaultCurrency: string;
 
   @IsNotEmpty()
   @IsString()
-  @MinLength(2, {
-    message: 'Use a valid alpha 2 language code',
-  })
-  @MaxLength(2, {
+  @Length(2, 2, {
     message: 'Use a valid alpha 2 language code',
   })
   defaultLanguage: string;

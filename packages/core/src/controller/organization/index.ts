@@ -13,6 +13,7 @@ import { UpdateOrganizationDto } from '../../dto/organization/update';
 import { AuthGuard } from '../../guard/auth';
 import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
+import { PersonService } from '../../service/person';
 
 @Controller('organization')
 export class OrganizationController {
@@ -35,38 +36,32 @@ export class OrganizationController {
     @Body() properties: CreateOrganizationDto,
   ) {
     const userId = session.getUserId();
-    const organization = await this.organizationService.create(
+    return this.organizationService.create(
       userId,
       properties,
     );
-    return {
-      ...organization.toJson(),
-    };
   }
 
   @Patch()
   @UseGuards(AuthGuard)
-  async putOrganization(
+  async patchOrganization(
     @Session() session: SessionContainer,
     @Body() properties: UpdateOrganizationDto,
   ) {
     const userId = session.getUserId();
-    const organization = await this.organizationService.update(
-      userId,
-      properties,
-    );
-    return {
-      ...organization.toJson(),
-    };
+		const roles = await this.organizationService.getOrganizationRoles(userId, properties.organizationId);
+		if (roles.includes('MANAGE_ORGANIZATION')) {
+			return this.organizationService.update(properties);
+		}
+		return {
+			message: 'Unauthorized',
+		};
   }
 
   @Delete()
   @UseGuards(AuthGuard)
   async deleteOrganization(@Session() session: SessionContainer) {
     const userId = session.getUserId();
-    const organization = await this.organizationService.delete(userId);
-    return {
-      message: 'Organization deleted',
-    };
+    return this.organizationService.delete(userId);
   }
 }
