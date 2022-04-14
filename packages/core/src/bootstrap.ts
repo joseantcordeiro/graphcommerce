@@ -22,7 +22,7 @@ export async function bootstrap() {
   });
 
 	/** for development or debugging */
-	const sendInternalServerErrorCause = false;
+	const sendInternalServerErrorCause = true;
 	const logAllErrors = true;
 	app.useGlobalFilters(new GlobalExceptionFilter(sendInternalServerErrorCause, logAllErrors));
 

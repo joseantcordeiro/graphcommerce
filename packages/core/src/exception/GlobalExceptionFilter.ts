@@ -30,8 +30,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         return JSON.stringify({causeError: integrationErrorDetails});
     }
 
-    // private logger: JsonLogger = LoggerFactory.createLogger(GlobalExceptionFilter.name);
-
 		private logger = winston.createLogger({
 			defaultMeta: { service: GlobalExceptionFilter.name },
 			transports: [
