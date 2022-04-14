@@ -17,7 +17,6 @@ import { AuthGuard } from '../../guard/auth';
 import { SessionContainer } from 'supertokens-node/recipe/session';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BufferedFile } from '../../entity/file';
-import { Person } from '../../entity/person';
 
 @Controller('person')
 export class PersonController {

@@ -68,7 +68,7 @@ export class MinioClientService {
     }
     const timestamp = Date.now().toString();
     const hashedFileName = crypto
-      .createHash('md5')
+      .createHash('sha512')
       .update(timestamp)
       .digest('hex');
     const extension = file.originalname.substring(
