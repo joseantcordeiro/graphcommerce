@@ -4,18 +4,12 @@ import { Neo4jErrorFilter } from 'nest-neo4j/dist';
 import { UnprocessibleEntityValidationPipe } from './pipes/unprocessible-entity-validation.pipe';
 import { SupertokensExceptionFilter } from './filter/auth'
 import { ConfigService } from '@nestjs/config';
-import { DefaultLogger } from './config/logger/default';
-import { Logger } from './config/logger/graphcommerce';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 export async function bootstrap() {
-	Logger.useLogger(Logger);
-  Logger.info(`Bootstrapping Graph Commerce Core Server (pid: ${process.pid})...`);
-
 	const AppModule = await import('./module/app');
-	DefaultLogger.hideNestBoostrapLogs();
   const app = await NestFactory.create(AppModule);
-	DefaultLogger.restoreOriginalLogLevel();
-  app.useLogger(new Logger());
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 	
 	const configService = app.get(ConfigService);
 	
@@ -27,10 +21,9 @@ export async function bootstrap() {
 
 	app.useGlobalFilters(new SupertokensExceptionFilter());
 	app.useGlobalFilters(new Neo4jErrorFilter());
-	app.useGlobalPipes(new UnprocessibleEntityValidationPipe());
+	// app.useGlobalPipes(new UnprocessibleEntityValidationPipe());
 
   await app.listen(8000);
-	Logger.info('Graph Commerce Core Server is listening on port 8000');
 
 	return app;
 }

@@ -41,13 +41,14 @@
     "@nestjs/platform-express": "^8.4.4",
     "@nestjs/terminus": "^8.0.6",
     "bull": "^4.8.1",
-    "chalk": "^4.1.2",
     "neo4j-driver": "^4.4.5",
     "nest-neo4j": "^0.1.5",
+    "nest-winston": "^1.6.2",
     "nestjs-minio-client": "^1.1.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.5.5",
-    "supertokens-node": "^9.1.2"
+    "supertokens-node": "^9.1.2",
+    "winston": "^3.7.2"
   },
   "devDependencies": {
     "@nestjs/testing": "^8.4.4",
