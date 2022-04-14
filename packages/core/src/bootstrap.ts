@@ -6,6 +6,7 @@ import { UnprocessibleEntityValidationPipe } from './pipes/unprocessible-entity-
 import { SupertokensExceptionFilter } from './filter/auth'
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { GlobalExceptionFilter } from './exception/GlobalExceptionFilter';
 
 export async function bootstrap() {
 
@@ -19,6 +20,11 @@ export async function bootstrap() {
     allowedHeaders: ['content-type', ...supertokens.getAllCORSHeaders()],
     credentials: true,
   });
+
+	/** for development or debugging */
+	const sendInternalServerErrorCause = false;
+	const logAllErrors = true;
+	app.useGlobalFilters(new GlobalExceptionFilter(sendInternalServerErrorCause, logAllErrors));
 
 	app.useGlobalFilters(new SupertokensExceptionFilter());
 	app.useGlobalFilters(new Neo4jErrorFilter());
