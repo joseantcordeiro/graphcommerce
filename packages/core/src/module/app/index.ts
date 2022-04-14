@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, OnApplicationShutdown } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { Neo4jModule } from 'nest-neo4j/dist';
