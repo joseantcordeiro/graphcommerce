@@ -1,4 +1,4 @@
-import {ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject} from '@nestjs/common';
+import {ArgumentsHost, Catch, ExceptionFilter, HttpStatus} from '@nestjs/common';
 import {Request, Response} from 'express';
 import {v1 as uuidv1} from 'uuid';
 import winston = require('winston');
