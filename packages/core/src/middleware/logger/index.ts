@@ -1,9 +1,10 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { Logger } from '../../config/logger/graphcommerce';
+
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private logger = new Logger('HTTP');
 
   use(request: Request, response: Response, next: NextFunction): void {
     const { ip, method, originalUrl } = request;
@@ -13,7 +14,7 @@ export class LoggerMiddleware implements NestMiddleware {
       const { statusCode } = response;
       const contentLength = response.get('content-length');
 
-      this.logger.log(
+      Logger.info(
         `${method} ${originalUrl} ${statusCode} ${contentLength} - ${userAgent} ${ip}`,
       );
     });
