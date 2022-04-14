@@ -29,8 +29,10 @@ import * as winston from 'winston';
           }),
           new winston.transports.Console({
             format: winston.format.combine(
+							winston.format.colorize(),
               winston.format.timestamp(),
-              nestWinstonModuleUtilities.format.nestLike(),
+							winston.format.ms(),
+              nestWinstonModuleUtilities.format.nestLike('GraphCommerce', { prettyPrint: true }),
             ),
           }),
         ],

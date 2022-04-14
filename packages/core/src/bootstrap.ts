@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import supertokens from 'supertokens-node';
+import { AppModule } from './module/app';
 import { Neo4jErrorFilter } from 'nest-neo4j/dist';
 import { UnprocessibleEntityValidationPipe } from './pipes/unprocessible-entity-validation.pipe';
 import { SupertokensExceptionFilter } from './filter/auth'
@@ -7,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 export async function bootstrap() {
-	const AppModule = await import('./module/app');
+
   const app = await NestFactory.create(AppModule);
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 	
@@ -21,7 +22,7 @@ export async function bootstrap() {
 
 	app.useGlobalFilters(new SupertokensExceptionFilter());
 	app.useGlobalFilters(new Neo4jErrorFilter());
-	// app.useGlobalPipes(new UnprocessibleEntityValidationPipe());
+	/** app.useGlobalPipes(new UnprocessibleEntityValidationPipe()); */
 
   await app.listen(8000);
 

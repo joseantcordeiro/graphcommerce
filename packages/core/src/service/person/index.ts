@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Neo4jService } from 'nest-neo4j/dist';
 import { CreatePersonDto } from '../../dto/person/create';
 import { UpdatePersonDto } from '../../dto/person/update';
-import { PersonCreatedEvent } from '../../event/person/created';
 import { Person } from '../../entity/person';
 import { MinioClientService } from '../minio-client';
 import { BufferedFile } from '../../entity/file';
@@ -12,7 +10,6 @@ import { BufferedFile } from '../../entity/file';
 export class PersonService {
   constructor(
     private readonly neo4jService: Neo4jService,
-    private readonly eventEmitter: EventEmitter2,
 		private minioClientService: MinioClientService,
   ) {}
   /** 
@@ -57,7 +54,7 @@ export class PersonService {
   }
 
 	async create(properties: CreatePersonDto): Promise<Person | undefined> {
-    const personCreated = await this.neo4jService
+    return this.neo4jService
       .write(
         `
 						MATCH (l:Language { alpha_2: $properties.defaultLanguage })
@@ -73,15 +70,10 @@ export class PersonService {
       )
       .then((res) => new Person(res.records[0].get('p')));
 
-    // Emit People Created Event
-    const personCreatedEvent = new PersonCreatedEvent();
-    personCreatedEvent.id = personCreated.getId();
-    this.eventEmitter.emit('person.created', personCreatedEvent);
-    return personCreated;
   }
 
   async createStaff(properties: CreatePersonDto): Promise<Person | undefined> {
-    const personCreated = await this.neo4jService
+    return this.neo4jService
       .write(
         `
 						MATCH (l:Language { alpha_2: $.properties.defaultLanguage })
@@ -98,11 +90,6 @@ export class PersonService {
       )
       .then((res) => new Person(res.records[0].get('p')));
 
-    // Emit People Created Event
-    const personCreatedEvent = new PersonCreatedEvent();
-    personCreatedEvent.id = personCreated.getId();
-    this.eventEmitter.emit('person.created', personCreatedEvent);
-    return personCreated;
   }
 
   async update(properties: UpdatePersonDto): Promise<Person | undefined> {

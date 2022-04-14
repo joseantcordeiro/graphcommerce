@@ -1,17 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Neo4jService } from 'nest-neo4j/dist';
 import { CreateOrganizationDto } from '../../dto/organization/create';
 import { UpdateOrganizationDto } from '../../dto/organization/update';
 import { Organization } from '../../entity/organization';
-import { OrganizationCreatedEvent } from '../../event/organization/created';
 
 @Injectable()
 export class OrganizationService {
-  constructor(
-		private readonly neo4jService: Neo4jService,
-		private readonly eventEmitter: EventEmitter2,
-		) {}
+  constructor(private readonly neo4jService: Neo4jService) {}
 
   async get(userId: string): Promise<Organization[] | undefined> {
     return this.neo4jService
@@ -42,7 +37,7 @@ export class OrganizationService {
     userId: string,
     properties: CreateOrganizationDto,
   ): Promise<Organization | undefined> {
-    const organizationCreated = await this.neo4jService.write(
+    return this.neo4jService.write(
       `
 			MATCH (p:Person {id: $userId}), (a:Currency { code: $properties.defaultCurrency }), (c:Country { iso_2: $properties.defaultCountry }), (l:Language { alpha_2: $properties.defaultLanguage })
 			WITH p, a, c, l, randomUUID() AS uuid
@@ -61,12 +56,7 @@ export class OrganizationService {
       },
     )
 		.then((res) => new Organization(res.records[0].get('o')));
-    
-		// Emit Organization Created Event
-    const organizationCreatedEvent = new OrganizationCreatedEvent();
-    organizationCreatedEvent.id = organizationCreated.getId();
-    this.eventEmitter.emit('organization.created', organizationCreatedEvent);
-    return organizationCreated;
+
   }
 
   async update(
