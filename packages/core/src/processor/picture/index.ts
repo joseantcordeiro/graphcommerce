@@ -11,7 +11,7 @@ export class PictureProcessor {
   @Process('resize')
   handleTranscode(job: Job) {
     this.logger.info('Start resize...');
-    this.logger.info(job.data);
+    this.logger.info('Data: ', job.data);
     this.logger.info('Resizing completed');
   }
 }
