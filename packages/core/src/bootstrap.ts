@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import supertokens from 'supertokens-node';
 import { AppModule } from './module/app';
+import { WorkerModule } from './module/worker'
 import { Neo4jErrorFilter } from 'nest-neo4j/dist';
 import { UnprocessibleEntityValidationPipe } from './pipes/unprocessible-entity-validation.pipe';
 import { SupertokensExceptionFilter } from './filter/auth'
@@ -31,6 +32,21 @@ export async function bootstrap() {
 	app.useGlobalPipes(new UnprocessibleEntityValidationPipe());
 
   await app.listen(8000);
+
+	return app;
+}
+
+export async function bootstrapWorker() {
+
+  const app = await NestFactory.create(WorkerModule);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
+	/** for development or debugging */
+	const sendInternalServerErrorCause = true;
+	const logAllErrors = true;
+	app.useGlobalFilters(new GlobalExceptionFilter(sendInternalServerErrorCause, logAllErrors));
+
+  await app.listen(8010);
 
 	return app;
 }

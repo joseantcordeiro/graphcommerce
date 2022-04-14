@@ -5,10 +5,13 @@ import { UpdatePersonDto } from '../../dto/person/update';
 import { Person } from '../../entity/person';
 import { MinioClientService } from '../minio-client';
 import { BufferedFile } from '../../entity/file';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class PersonService {
   constructor(
+		@InjectQueue('picture') private readonly pictureQueue: Queue,
     private readonly neo4jService: Neo4jService,
 		private minioClientService: MinioClientService,
   ) {}
@@ -128,6 +131,10 @@ export class PersonService {
 				`,
 			{ userId, picture },
 		);
+
+		await this.pictureQueue.add('resize', {
+      file: res.records[0].get('profile_picture'),
+    });
 
 		return {
 			profile_picture: res.records[0].get('profile_picture'),

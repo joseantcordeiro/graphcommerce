@@ -3,10 +3,12 @@
   "version": "0.0.1",
   "description": "Open Source Graph Commerce (backend-server)",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start:server": "ts-node src/index.ts",
+		"start:worker": "ts-node src/worker.ts",
+		"start": "concurrently npm:run*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-	"keywords": [
+  "keywords": [
     "graph",
     "commerce"
   ],
@@ -16,5 +18,8 @@
   "dependencies": {
     "@graphcommerce/core": "^0.0.1",
     "ts-node": "^10.7.0"
+  },
+  "devDependencies": {
+    "concurrently": "^7.1.0"
   }
 }

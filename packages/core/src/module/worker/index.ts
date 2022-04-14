@@ -1,23 +1,13 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TerminusModule } from '@nestjs/terminus';
 import { Neo4jModule } from 'nest-neo4j/dist';
-import { HealthController } from '../../controller/health';
-import { DatabaseHealthIndicator } from '../../controller/health/indicator/db';
-import { LoggerMiddleware } from '../../middleware/logger';
-import { AuthModule } from '../auth';
-import { ImageUploadModule } from '../image-upload';
-import { PersonModule } from '../person';
-import { OrganizationModule } from '../organization';
-import { CountriesModule } from '../countries';
-import { CurrenciesModule } from '../currencies';
-import { LanguagesModule } from '../languages';
 import {
   utilities as nestWinstonModuleUtilities,
   WinstonModule,
 } from 'nest-winston';
 import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
+import { PictureModule } from '../picture'
 
 @Module({
   imports: [
@@ -33,7 +23,7 @@ import { BullModule } from '@nestjs/bull';
 							winston.format.colorize(),
               winston.format.timestamp(),
 							winston.format.ms(),
-              nestWinstonModuleUtilities.format.nestLike('GraphCommerce', { prettyPrint: true }),
+              nestWinstonModuleUtilities.format.nestLike('GraphCommerceWorker', { prettyPrint: true }),
             ),
           }),
         ],
@@ -52,23 +42,12 @@ import { BullModule } from '@nestjs/bull';
 			inject: [ConfigService],
 		}),
 		Neo4jModule.fromEnv(),
-		AuthModule.fromEnv(),
-		TerminusModule,
-		ImageUploadModule,
-		CountriesModule,
-		CurrenciesModule,
-		LanguagesModule,
-		PersonModule,
-		OrganizationModule,
+		PictureModule,
 	],
-  controllers: [HealthController],
-  providers: [DatabaseHealthIndicator],
+  controllers: [],
+  providers: [],
 })
-export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-  }
-
+export class WorkerModule {
 	/** 
 	async onApplicationShutdown(signal?: string) {
 		if (signal) {
