@@ -87,7 +87,7 @@ export class MinioClientService {
       fileName,
       file.buffer,
       metaData,
-      function (err, res) {
+      function (err, _res) {
         if (err) {
           throw new HttpException(
             'Error uploading file',
@@ -103,7 +103,7 @@ export class MinioClientService {
   }
 
   async delete(objetName: string, bucketName: string = this.bucketName) {
-    this.client.removeObject(bucketName, objetName, function (err, res) {
+    this.client.removeObject(bucketName, objetName, function (err, _res) {
       if (err)
         throw new HttpException(
           'An error occured when deleting!',
