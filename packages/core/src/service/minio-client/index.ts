@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { MinioService } from 'nestjs-minio-client';
 import { BufferedFile } from '../../entity/file';
-import * as crypto from 'crypto';
+import {v1 as uuidv1} from 'uuid';
 
 @Injectable()
 export class MinioClientService {
@@ -67,10 +67,7 @@ export class MinioClientService {
       );
     }
     const timestamp = Date.now().toString();
-    const hashedFileName = crypto
-      .createHash('sha512')
-      .update(timestamp)
-      .digest('hex');
+		const uuidFileName = uuidv1() + '-' + timestamp;
     const extension = file.originalname.substring(
       file.originalname.lastIndexOf('.'),
       file.originalname.length,
@@ -80,7 +77,7 @@ export class MinioClientService {
     };
 
     // We need to append the extension at the end otherwise Minio will save it as a generic file
-    const fileName = hashedFileName + extension;
+    const fileName = uuidFileName + extension;
 
     this.client.putObject(
       bucketName,

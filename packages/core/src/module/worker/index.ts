@@ -10,7 +10,6 @@ import { BullModule } from '@nestjs/bull';
 import { PictureModule } from '../picture'
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { join } from 'path';
 import { MailModule } from '../mail';
 
 @Module({
