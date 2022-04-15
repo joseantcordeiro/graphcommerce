@@ -10,6 +10,9 @@ import { BullModule } from '@nestjs/bull';
 		BullModule.registerQueue({
       name: 'picture',
     }),
+		BullModule.registerQueue({
+      name: 'mail',
+    }),
 	],
   providers: [PersonService],
   controllers: [PersonController]

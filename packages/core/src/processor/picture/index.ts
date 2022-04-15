@@ -9,7 +9,7 @@ export class PictureProcessor {
   constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
 
   @Process('resize')
-  handleTranscode(job: Job) {
+  handleResize(job: Job) {
     this.logger.info('Start resize...');
     this.logger.info('Data: ', job.data);
     this.logger.info('Resizing completed');

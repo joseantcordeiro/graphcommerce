@@ -11,6 +11,10 @@ export class Person {
     return (<Record<string, any>>this.node.properties).name;
   }
 
+	getEmail(): string {
+    return (<Record<string, any>>this.node.properties).email;
+  }
+
   toJson() {
     return {
       ...this.node.properties,

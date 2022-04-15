@@ -12,6 +12,7 @@ import { Queue } from 'bull';
 export class PersonService {
   constructor(
 		@InjectQueue('picture') private readonly pictureQueue: Queue,
+		@InjectQueue('mail') private readonly mailQueue: Queue,
     private readonly neo4jService: Neo4jService,
 		private minioClientService: MinioClientService,
   ) {}
@@ -57,7 +58,7 @@ export class PersonService {
   }
 
 	async create(properties: CreatePersonDto): Promise<Person | undefined> {
-    return this.neo4jService
+    const personCreated = this.neo4jService
       .write(
         `
 						MATCH (l:Language { alpha_2: $properties.defaultLanguage })
@@ -72,6 +73,13 @@ export class PersonService {
         },
       )
       .then((res) => new Person(res.records[0].get('p')));
+
+		await this.mailQueue.add('welcome', {
+				email: (await personCreated).getEmail(),
+				name: (await personCreated).getName(),
+		});
+
+		return personCreated;
 
   }
 
