@@ -31,7 +31,7 @@ export async function bootstrap() {
 
 	app.useGlobalFilters(new SupertokensExceptionFilter());
 	app.useGlobalFilters(new Neo4jErrorFilter());
-	app.useGlobalPipes(new UnprocessibleEntityValidationPipe());
+	// app.useGlobalPipes(new UnprocessibleEntityValidationPipe());
 
   await app.listen(8000);
 

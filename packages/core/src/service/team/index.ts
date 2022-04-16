@@ -13,7 +13,7 @@ import { Person } from '../../entity/person';
 export class TeamService {
   constructor(private readonly neo4jService: Neo4jService) {}
 
-	async get(userId: string): Promise<Team | any> {
+	async get(userId: string): Promise<Team[] | any> {
 		const res = await this.neo4jService.read(
 			`
 			MATCH (p:Person { id: $userId })-[:IS_MEMBER]->(t:Team)
@@ -22,21 +22,20 @@ export class TeamService {
 		);
 		return res.records.length ? res.records.map((row) => new Team(row.get('t'), [
 				new Person(row.get('p')),
-			])) : { message: 'You is not a member of any team' };
+			])) : {};
 	}
 
-  async getById(teamId: string): Promise<Team | any> {
+  async getById(teamId: string): Promise<Team[] | any> {
     const res = await this.neo4jService.read(
       `
-        MATCH (t:Team {id: $teamId})
-        RETURN t,
-			   			 [ (p)-[:IS_MEMBER]->(t) | p ] AS members
+				MATCH (p:Person)-[:IS_MEMBER]->(t:Team {id: $teamId})
+        RETURN t, p
         `,
       { teamId },
     );
-    return res.records.length ? new Team(res.records[0].get('t'), [
-				new Person(res.records[0].get('members')),
-			]) : { message: 'Team not found' };
+    return res.records.length ? res.records.map((row) => new Team(row.get('t'), [
+			new Person(row.get('p')),
+			])) : {};
   }
 
 	async getUserRoles(userId: string, teamId: string): Promise<string[]> {
@@ -52,7 +51,7 @@ export class TeamService {
   async create(
     userId: string,
     properties: CreateTeamDto,
-  ): Promise<Team | any> {
+  ): Promise<Team[] | any> {
     const res = await this.neo4jService.write(
       `
 			MATCH (p:Person { id: $userId }), (o:Organization { id: $properties.organizationId })
@@ -69,14 +68,14 @@ export class TeamService {
       },
     );
 
-    return res.records.length ? new Team(res.records[0].get('t'), [
-				new Person(res.records[0].get('p')),
-			]) : { message: 'Team creation error' };
+    return res.records.length ? res.records.map((row) => new Team(row.get('t'), [
+			new Person(row.get('p')),
+			])) : {};
   }
 
   async update(
     properties: UpdateTeamDto,
-  ): Promise<Team | any> {
+  ): Promise<Team[] | any> {
     const res = await this.neo4jService.write(
       `
             MATCH (t:Team { id: $properties.teamId })
@@ -86,9 +85,9 @@ export class TeamService {
         `,
       { properties },
     );
-		return res.records.length ? new Team(res.records[0].get('t'), [
-			new Person(res.records[0].get('members')),
-			]) : { message: 'Team not found' };
+		return res.records.length ? res.records.map((row) => new Team(row.get('t'), [
+			new Person(row.get('members')),
+			])) : {};
   }
 
 	/** 

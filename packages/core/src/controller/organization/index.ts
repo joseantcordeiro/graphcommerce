@@ -6,6 +6,8 @@ import {
   Delete,
   UseGuards,
   Patch,
+	HttpException,
+	HttpStatus,
 } from '@nestjs/common';
 import { OrganizationService } from '../../service/organization';
 import { CreateOrganizationDto } from '../../dto/organization/create';
@@ -23,9 +25,12 @@ export class OrganizationController {
   async getOrganization(@Session() session: SessionContainer) {
     const userId = session.getUserId();
     const organizations = await this.organizationService.get(userId);
-    return {
-      ...organizations,
-    };
+		if (Array.isArray(organizations)) {
+			return {
+				organizations: organizations.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('You is not a member of any organization', HttpStatus.NOT_FOUND);
   }
 
   @Post()
@@ -35,10 +40,16 @@ export class OrganizationController {
     @Body() properties: CreateOrganizationDto,
   ) {
     const userId = session.getUserId();
-    return this.organizationService.create(
+    const organizations = await this.organizationService.create(
       userId,
       properties,
     );
+		if (Array.isArray(organizations)) {
+			return {
+				organizations: organizations.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Organization couldn\'t be created', HttpStatus.NOT_MODIFIED);
   }
 
   @Patch()
@@ -50,11 +61,16 @@ export class OrganizationController {
     const userId = session.getUserId();
 		const roles = await this.organizationService.getOrganizationRoles(userId, properties.organizationId);
 		if (roles.includes('MANAGE_ORGANIZATION')) {
-			return this.organizationService.update(properties);
+			const organizations = await this.organizationService.update(properties);
+			if (Array.isArray(organizations)) {
+				return {
+					organizations: organizations.map(m => m.toJson()),
+				};
+			}
+			throw new HttpException('Organization couldn\'t be updated', HttpStatus.NOT_MODIFIED);
 		}
-		return {
-			message: 'Unauthorized',
-		};
+
+		throw new HttpException('You need to have the MANAGE_ORGANIZATION role', HttpStatus.FORBIDDEN);
   }
 
   @Delete()

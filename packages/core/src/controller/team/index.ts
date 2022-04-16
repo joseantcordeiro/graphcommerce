@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Patch,
   Post,
   UseGuards,
@@ -27,14 +29,17 @@ export class TeamController {
     @Body() properties: CreateTeamDto,
   ) {
 		const userId = session.getUserId();
-    const team = await this.teamService.create(
+    const teams = await this.teamService.create(
       userId,
       properties,
     );
 
-    return {
-      ...team.withMembers(),
-    };
+		if (Array.isArray(teams)) {
+			return {
+				teams: teams.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Team couldn\'t be created', HttpStatus.NOT_MODIFIED);
   }
 
   @UseGuards(AuthGuard)
@@ -46,14 +51,15 @@ export class TeamController {
 		const userId = session.getUserId();
 		const roles = await this.teamService.getUserRoles(userId, properties.teamId);
 		if (roles.includes('MANAGE_TEAM')) {
-			const team = await this.teamService.update(properties);
-			return {
-				...team.toJson(),
-			};
+			const teams = await this.teamService.update(properties);
+			if (Array.isArray(teams)) {
+				return {
+					teams: teams.map(m => m.toJson()),
+				};
+			}
+			throw new HttpException('Team couldn\'t be updated', HttpStatus.NOT_MODIFIED);
 		}
-		return {
-			message: 'Unauthorized',
-		};
+		throw new HttpException('You need to have the MANAGE_TEAM role', HttpStatus.FORBIDDEN);
   }
 
   @UseGuards(AuthGuard)
@@ -62,20 +68,26 @@ export class TeamController {
 		const userId = session.getUserId();
     const teams = await this.teamService.get(userId);
 
-    return {
-			teams: teams.map(m => m.toJson()),
-    };
+		if (Array.isArray(teams)) {
+			return {
+				teams: teams.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('You is not a member of any team', HttpStatus.NOT_FOUND);
   }
 
 	@UseGuards(AuthGuard)
   @Get('id')
   async getTeamById(@Session() session: SessionContainer, @Body() properties: { teamId: string }) {
 		const userId = session.getUserId();
-    const team = await this.teamService.getById(properties.teamId);
+    const teams = await this.teamService.getById(properties.teamId);
 
-    return {
-			...team.withMembers(),
-    };
+		if (Array.isArray(teams)) {
+			return {
+				teams: teams.map(m => m.withMembers()),
+			};
+		}
+		throw new HttpException('Team not found', HttpStatus.NOT_FOUND);
   }
 
 	/**

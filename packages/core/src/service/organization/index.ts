@@ -8,18 +8,16 @@ import { Organization } from '../../entity/organization';
 export class OrganizationService {
   constructor(private readonly neo4jService: Neo4jService) {}
 
-  async get(userId: string): Promise<Organization[] | undefined> {
-    return this.neo4jService
+  async get(userId: string): Promise<Organization[] | any> {
+    const res = await this.neo4jService
       .read(
         `
-			  MATCH (p:Person { id: $userId })
-			  RETURN [ (p)-[:WORKS_AT]->(o:Organization) | o ] AS organizations
+			  MATCH (p:Person { id: $userId })-[:WORKS_AT]->(o:Organization)
+			  RETURN o
 			  `,
         { userId },
-      )
-      .then((res) =>
-        res.records.map((row) => new Organization(row.get('organizations'))),
       );
+			return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : {};
   }
 
 	async getOrganizationRoles(userId: string, organizationId: string): Promise<string[]> {
@@ -36,14 +34,14 @@ export class OrganizationService {
   async create(
     userId: string,
     properties: CreateOrganizationDto,
-  ): Promise<Organization | undefined> {
-    return this.neo4jService.write(
+  ): Promise<Organization[] | any> {
+    const res = await this.neo4jService.write(
       `
 			MATCH (p:Person {id: $userId}), (a:Currency { code: $properties.defaultCurrency }), (c:Country { iso_2: $properties.defaultCountry }), (l:Language { alpha_2: $properties.defaultLanguage })
 			WITH p, a, c, l, randomUUID() AS uuid
 			CREATE (o:Organization { id: uuid })
-			SET o.name = $properties.name, o.createdAt = datetime()
-			CREATE (p)-[:OWNS]->(o)
+			SET o.name = $properties.name
+			CREATE (p)-[:OWNS { createdAt: datetime() }]->(o)
 			CREATE (p)-[:WORKS_AT { role: ['MANAGE_ORGANIZATION'], since: datetime() }]->(o)
 			CREATE (c)-[:DEFAULT_COUNTRY]->(o)
 			CREATE (a)-[:DEFAULT_CURRENCY]->(o)
@@ -54,18 +52,21 @@ export class OrganizationService {
         userId,
         properties,
       },
-    )
-		.then((res) => new Organization(res.records[0].get('o')));
+    );
+
+		return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : {};
 
   }
 
   async update(
     properties: UpdateOrganizationDto,
-  ): Promise<Organization | any> {
+  ): Promise<Organization[] | any> {
     const res = await this.neo4jService.write(
       `
-		MATCH (o:Organization {id: $properties.organizationId})
-		SET o.name = $properties.name, o.updatedAt = datetime()
+		MATCH (p:Person)-[r:OWNS]->(o {id: $properties.organizationId})
+		WITH o, p, r
+		SET o.name = $properties.name
+		SET r.updatedAt = datetime()
 		RETURN o
 	  `,
       {
@@ -73,7 +74,7 @@ export class OrganizationService {
       },
     );
 
-    return res.records.length ? new Organization(res.records[0].get('o')) : { message: 'Organization not found' };
+    return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : {};
   }
 
   async delete(userId: string): Promise<any> {
