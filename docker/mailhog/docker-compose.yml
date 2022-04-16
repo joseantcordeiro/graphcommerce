@@ -2,6 +2,8 @@ version: '3'
 services:
   mailhog:
     image: mailhog/mailhog
+    container_name: mailhog
+    restart: always
     logging:
       driver: 'none'
     ports:

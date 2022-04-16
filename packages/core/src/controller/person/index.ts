@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Patch,
   Post,
   UploadedFile,
@@ -17,10 +19,14 @@ import { AuthGuard } from '../../guard/auth';
 import { SessionContainer } from 'supertokens-node/recipe/session';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BufferedFile } from '../../entity/file';
+import { FindPersonDto } from '../../dto/organization/find';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Controller('person')
 export class PersonController {
-  constructor(private readonly personService: PersonService) {}
+  constructor(private readonly personService: PersonService,
+		@InjectQueue('mail') private readonly mailQueue: Queue,) {}
 
   @UseGuards(AuthGuard)
   @Post()
@@ -30,23 +36,43 @@ export class PersonController {
   ) {
     const userId = session.getUserId();
 		if (userId === properties.userId) {
-			return this.personService.create(properties);
-		} else {
-			return this.personService.createStaff(properties);
+			const person = await this.personService.create(properties);
+			if (Array.isArray(person)) {
+				this.mailQueue.add('welcome', {
+					email: person[0].getEmail(),
+					name: person[0].getName(),
+				});
+				return {
+					persons: person.map(m => m.toJson()),
+				};
+			}
 		}
+		throw new HttpException('Person couldn\'t be created', HttpStatus.NOT_MODIFIED);
   }
 
   @UseGuards(AuthGuard)
   @Get()
   async getPerson(@Session() session: SessionContainer) {
     const userId = session.getUserId();
-    return this.personService.get(userId);
+    const person = await this.personService.get(userId);
+		if (Array.isArray(person)) {
+			return {
+				persons: person.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Something is wrong, try to refresh the session.', HttpStatus.NOT_FOUND);
   }
 
 	@UseGuards(AuthGuard)
 	@Get('find')
-	async findPerson(@Body() body: { email: string }) {
-		return this.personService.find(body.email);
+	async findPerson(@Body() properties: FindPersonDto) {
+		const person = await this.personService.find(properties);
+		if (Array.isArray(person)) {
+			return {
+				persons: person.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Person not found in current organization', HttpStatus.NOT_FOUND);
 	}
 
   @UseGuards(AuthGuard)
@@ -57,10 +83,15 @@ export class PersonController {
   ) {
     const userId = session.getUserId();
     if (userId === properties.userId) {
-    	return this.personService.update(properties);
-    } else {
-			return { message: 'Not allowed' };
+    	const person = await this.personService.update(properties);
+			if (Array.isArray(person)) {
+				return {
+					persons: person.map(m => m.toJson()),
+				};
+			}
+			throw new HttpException('Person couldn\'t be updated', HttpStatus.NOT_MODIFIED);
     }
+		throw new HttpException('You need to have the MANAGE_ORGANIZATION role', HttpStatus.FORBIDDEN);
   }
 
   @UseGuards(AuthGuard)

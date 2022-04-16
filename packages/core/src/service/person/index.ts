@@ -7,12 +7,12 @@ import { MinioClientService } from '../minio-client';
 import { BufferedFile } from '../../entity/file';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { FindPersonDto } from '../../dto/organization/find';
 
 @Injectable()
 export class PersonService {
   constructor(
 		@InjectQueue('picture') private readonly pictureQueue: Queue,
-		@InjectQueue('mail') private readonly mailQueue: Queue,
     private readonly neo4jService: Neo4jService,
 		private minioClientService: MinioClientService,
   ) {}
@@ -35,7 +35,7 @@ export class PersonService {
   }
 */
 
-  async get(userId: string): Promise<Person | undefined> {
+  async get(userId: string): Promise<Person[] | any> {
     const res = await this.neo4jService.read(
       `
 					MATCH (p:Person {id: $userId})
@@ -43,18 +43,19 @@ export class PersonService {
 			`,
       { userId },
     );
-    return res.records.length ? new Person(res.records[0].get('p')) : undefined;
+    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
   }
 
-  async find(email: string): Promise<Person | undefined> {
+  async find(properties: FindPersonDto): Promise<Person[] | any> {
     const res = await this.neo4jService.read(
       `
-            MATCH (p:Person {email: $email})
+            MATCH (p:Person {email: $properties.email})-[:WORKS_AT]->(o:Organization {id: $properties.organizationId})
             RETURN p
         `,
-      { email },
+      { properties },
     );
-    return res.records.length ? new Person(res.records[0].get('p')) : undefined;
+
+    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
   }
 
 	async organization(userId: string): Promise<string | null> {
@@ -69,30 +70,23 @@ export class PersonService {
 	
 	}
 	
-	async create(properties: CreatePersonDto): Promise<Person | undefined> {
-    const personCreated = this.neo4jService
+	async create(properties: CreatePersonDto): Promise<Person[] | any> {
+    const res = await this.neo4jService
       .write(
         `
 						MATCH (l:Language { alpha_2: $properties.defaultLanguage })
 						WITH l
             CREATE (p:Person { id: $properties.userId })
-            SET p.name = $properties.name, p.email = $properties.email, p.createdAt = datetime()
+            SET p.name = $properties.name, p.email = $properties.email
 						CREATE (l)-[:DEFAULT_LANGUAGE]->(p)
             RETURN p
         `,
         {
           properties,
         },
-      )
-      .then((res) => new Person(res.records[0].get('p')));
+      );
 
-		await this.mailQueue.add('welcome', {
-				email: (await personCreated).getEmail(),
-				name: (await personCreated).getName(),
-		});
-
-		return personCreated;
-
+		return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
   }
 
   async createStaff(properties: CreatePersonDto): Promise<Person | undefined> {
@@ -115,17 +109,19 @@ export class PersonService {
 
   }
 
-  async update(properties: UpdatePersonDto): Promise<Person | undefined> {
+  async update(properties: UpdatePersonDto): Promise<Person[] | any> {
     const res = await this.neo4jService.write(
       `
-            MATCH (p:Person { id: $properties.userId })
-            SET p.name = $properties.name, p.email = $properties.email, p.updatedAt = datetime()
+            MATCH (p:Person { id: $properties.userId })-[r:WORKS_AT]->(o:Organization { id: $properties.organizationId })
+						WITH p, r
+            SET p.name = $properties.name, p.email = $properties.email
+						SET r.updatedAt = datetime()
             RETURN p
         `,
       { properties },
     );
     // TODO: Emit Person Updated Event
-    return new Person(res.records[0].get('p'));
+    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
   }
 
   async delete(userId: string): Promise<any> {
@@ -146,7 +142,7 @@ export class PersonService {
 		const res = await this.neo4jService.write(
 			`
 					MATCH (p:Person { id: $userId })
-					SET p.picture = $picture, p.updatedAt = datetime()
+					SET p.picture = $picture
 					RETURN p.picture AS profile_picture
 				`,
 			{ userId, picture },

@@ -1,6 +1,10 @@
 import { IsNotEmpty, IsString, IsEmail, Length, MinLength } from 'class-validator';
 
 export class UpdatePersonDto {
+	@IsNotEmpty()
+  @IsString()
+  organizationId: string;
+
   @IsNotEmpty()
   @IsString()
   userId: string;
