@@ -57,6 +57,18 @@ export class PersonService {
     return res.records.length ? new Person(res.records[0].get('p')) : undefined;
   }
 
+	async organization(userId: string): Promise<string | null> {
+		const res = await this.neo4jService.read(
+			`
+			MATCH (p:Person { id: $userId })-[r:WORKS_AT]->(o:Organization)
+			RETURN o.id AS organizationId
+			`,
+		 { userId },
+		);
+		return res.records.length ? res.records[0].get('organizationId') : null;
+	
+	}
+	
 	async create(properties: CreatePersonDto): Promise<Person | undefined> {
     const personCreated = this.neo4jService
       .write(

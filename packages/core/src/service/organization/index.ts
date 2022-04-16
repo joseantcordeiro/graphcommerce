@@ -44,7 +44,7 @@ export class OrganizationService {
 			CREATE (o:Organization { id: uuid })
 			SET o.name = $properties.name, o.createdAt = datetime()
 			CREATE (p)-[:OWNS]->(o)
-			CREATE (p)-[:WORKS_AT { role: ['MANAGE_ORGANIZATION', 'MANAGE_STAFF'], since: datetime() }]->(o)
+			CREATE (p)-[:WORKS_AT { role: ['MANAGE_ORGANIZATION'], since: datetime() }]->(o)
 			CREATE (c)-[:DEFAULT_COUNTRY]->(o)
 			CREATE (a)-[:DEFAULT_CURRENCY]->(o)
 			CREATE (l)-[:DEFAULT_LANGUAGE]->(o)
@@ -61,7 +61,7 @@ export class OrganizationService {
 
   async update(
     properties: UpdateOrganizationDto,
-  ): Promise<Organization | undefined> {
+  ): Promise<Organization | any> {
     const res = await this.neo4jService.write(
       `
 		MATCH (o:Organization {id: $properties.organizationId})
@@ -73,7 +73,7 @@ export class OrganizationService {
       },
     );
 
-    return new Organization(res.records[0].get('o'));
+    return res.records.length ? new Organization(res.records[0].get('o')) : { message: 'Organization not found' };
   }
 
   async delete(userId: string): Promise<any> {

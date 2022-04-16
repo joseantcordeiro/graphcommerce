@@ -9,6 +9,7 @@ import { AuthModule } from '../auth';
 import { ImageUploadModule } from '../image-upload';
 import { PersonModule } from '../person';
 import { OrganizationModule } from '../organization';
+import { TeamModule } from '../team';
 import { CountriesModule } from '../countries';
 import { CurrenciesModule } from '../currencies';
 import { LanguagesModule } from '../languages';
@@ -18,7 +19,6 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
-import { TeamModule } from '../team';
 
 @Module({
   imports: [
@@ -34,7 +34,7 @@ import { TeamModule } from '../team';
 							winston.format.colorize(),
               winston.format.timestamp(),
 							winston.format.ms(),
-              nestWinstonModuleUtilities.format.nestLike('GraphCommerce', { prettyPrint: true }),
+              nestWinstonModuleUtilities.format.nestLike('GraphCommerceSwagger', { prettyPrint: true }),
             ),
           }),
         ],
@@ -66,7 +66,7 @@ import { TeamModule } from '../team';
   controllers: [HealthController],
   providers: [DatabaseHealthIndicator],
 })
-export class AppModule implements NestModule {
+export class SwaggerAppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }

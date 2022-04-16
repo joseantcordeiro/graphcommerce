@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import supertokens from 'supertokens-node';
 import { AppModule } from './module/app';
 import { WorkerModule } from './module/worker'
+import { SwaggerAppModule } from './module/swagger';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Neo4jErrorFilter } from 'nest-neo4j/dist';
 import { UnprocessibleEntityValidationPipe } from './pipes/unprocessible-entity-validation.pipe';
 import { SupertokensExceptionFilter } from './filter/auth'
@@ -47,6 +49,30 @@ export async function bootstrapWorker() {
 	app.useGlobalFilters(new GlobalExceptionFilter(sendInternalServerErrorCause, logAllErrors));
 
   await app.listen(8010);
+
+	return app;
+}
+
+export async function bootstrapSwagger() {
+
+  const app = await NestFactory.create(SwaggerAppModule);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
+	/** for development or debugging */
+	const sendInternalServerErrorCause = true;
+	const logAllErrors = true;
+	app.useGlobalFilters(new GlobalExceptionFilter(sendInternalServerErrorCause, logAllErrors));
+
+	const config = new DocumentBuilder()
+    .setTitle('Graph Commerce API')
+    .setDescription('The Graph Commerce API description')
+    .setVersion('0.0.1')
+    .addTag('graphcommerce')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
+  await app.listen(8020);
 
 	return app;
 }

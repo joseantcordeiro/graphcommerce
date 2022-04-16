@@ -4,10 +4,12 @@ import Session from 'supertokens-node/recipe/session';
 import EmailPassword from 'supertokens-node/recipe/emailpassword';
 
 import { ConfigInjectionToken, AuthModuleConfig } from '../../config/auth';
+import { PersonService } from '../person';
 
 @Injectable()
 export class SupertokensService {
-  constructor(@Inject(ConfigInjectionToken) private config: AuthModuleConfig) {
+  constructor(@Inject(ConfigInjectionToken) private config: AuthModuleConfig, @Inject(PersonService) private personService: PersonService) {
+
     supertokens.init({
       appInfo: config.appInfo,
       supertokens: {
@@ -20,25 +22,25 @@ export class SupertokensService {
           jwt: {
             enable: true,
           },
-          /**          override: {
+          /** override: {
             functions: (originalImplementation) => {
               return {
                 ...originalImplementation,
                 createNewSession: async function (input) {
                   const userId = input.userId;
-                  const organizations =
-                    await this.usersService.userOrganizations(userId);
+                  const organization = await this.personService.organization(userId);
 
                   // This goes in the access token, and is availble to read on the frontend.
                   input.accessTokenPayload = {
                     ...input.accessTokenPayload,
-                    Organizations: organizations,
+                    organization: organization,
                   };
 
                   return originalImplementation.createNewSession(input);
                 },
               };
             },
+						
             apis: (originalImplementation) => {
               return {
                 ...originalImplementation,
