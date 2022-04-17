@@ -1,5 +1,6 @@
 import {
   Body,
+  CacheInterceptor,
   Controller,
   Get,
   HttpException,
@@ -7,6 +8,7 @@ import {
   Patch,
   Post,
   UseGuards,
+	UseInterceptors,
 } from '@nestjs/common';
 
 import { CreateTeamDto } from '../../dto/team/create';
@@ -19,6 +21,7 @@ import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
 
 @Controller('team')
+@UseInterceptors(CacheInterceptor)
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 

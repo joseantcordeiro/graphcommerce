@@ -1,5 +1,6 @@
 import {
   Body,
+  CacheInterceptor,
   Controller,
   Delete,
   Get,
@@ -24,6 +25,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
 @Controller('person')
+@UseInterceptors(CacheInterceptor)
 export class PersonController {
   constructor(private readonly personService: PersonService,
 		@InjectQueue('mail') private readonly mailQueue: Queue,) {}

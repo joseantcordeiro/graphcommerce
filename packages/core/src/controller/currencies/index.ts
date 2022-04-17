@@ -1,9 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
+import { CacheInterceptor, CacheTTL, Controller, Get, UseInterceptors } from '@nestjs/common';
 import { CurrenciesService } from '../../service/currencies';
 
 @Controller('currencies')
+@UseInterceptors(CacheInterceptor)
 export class CurrenciesController {
   constructor(private readonly currenciesService: CurrenciesService) {}
+	@CacheTTL(86400)
 
   @Get()
   async getList() {

@@ -8,6 +8,8 @@ import {
   Patch,
 	HttpException,
 	HttpStatus,
+	UseInterceptors,
+	CacheInterceptor,
 } from '@nestjs/common';
 import { OrganizationService } from '../../service/organization';
 import { CreateOrganizationDto } from '../../dto/organization/create';
@@ -17,6 +19,7 @@ import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
 
 @Controller('organization')
+@UseInterceptors(CacheInterceptor)
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
