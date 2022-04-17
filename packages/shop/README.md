@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-const shop = require('shop');
+const shop = require('@graphcomerce/shop');
 
 // TODO: DEMONSTRATE API
 ```

@@ -4,8 +4,7 @@
   "description": "Shops managment module",
   "keywords": [
     "graph",
-    "commerce",
-    "neo4j"
+    "commerce"
   ],
   "author": "José Cordeiro <joseantcordeiro@pm.me>",
   "homepage": "https://github.com/joseantcordeiro/graphcommerce#readme",
