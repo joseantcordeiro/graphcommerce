@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, BrowserRouter as Router, Route } from "react-router-dom";
 import SuperTokens, { getSuperTokensRoutesForReactRouterDom } from "supertokens-auth-react";
 import EmailPassword from "supertokens-auth-react/recipe/emailpassword";
@@ -8,6 +8,8 @@ import Dashboard from "./c/dashboard";
 import Footer from "./c/footer";
 import SessionExpiredPopup from "./c/SessionExpiredPopup";
 import Profile from "./c/account/profile";
+import axios from "axios";
+import Nav from "./c/nav";
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 8000;
@@ -37,13 +39,39 @@ SuperTokens.init({
     ],
 });
 
+Session.addAxiosInterceptors(axios);
+
+interface CurrentUser {
+  name: string,
+	picture: string
+}
+
 function App() {
   let [showSessionExpiredPopup, updateShowSessionExpiredPopup] = useState(false);
+	let [currentUser, updateCurrentUser] = useState<CurrentUser>({ name: "", picture: "" });
+	let { userId, doesSessionExist } = useSessionContext();
+
+	async function callAPI() {
+		try {
+			const response = await axios.get(getApiDomain() + "/person");
+			if (response.statusText !== "OK") {
+				throw Error(response.statusText);
+			}
+			updateCurrentUser({ name: response.data.persons[0].name, picture: response.data.persons[0].picture });
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	useEffect(() => {
+    callAPI();
+  }, [])
 
   return (
     <div className="App">
         <Router>
           <div className="fill">
+						{!doesSessionExist ? <Nav picture={currentUser.picture} /> : null}
             <Routes>
               {/* This shows the login UI on "/auth" route */}
               {getSuperTokensRoutesForReactRouterDom(require("react-router-dom"))}
@@ -89,7 +117,7 @@ function App() {
                     onSessionExpired={() => {
                       updateShowSessionExpiredPopup(true);
                     }}>
-                    <Profile />
+                    <Profile name={currentUser.name} picture={currentUser.picture} />
                     {showSessionExpiredPopup && <SessionExpiredPopup />}
                   </EmailPassword.EmailPasswordAuth>
                 }

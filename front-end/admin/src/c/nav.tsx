@@ -1,10 +1,16 @@
 import OrgDropDown from "./orgs/dropdown";
-import AccountDropDown from "./account/dropdown";
+import AccountDropDown from "./account/AccountDropDown";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "supertokens-auth-react/recipe/emailpassword";
 
-export default function Nav() {
+interface IProps {
+	picture: string;
+}
 
+export default function Nav(props: IProps) {
+	let picture = props.picture;
+
+	console.log(picture);
 	const navigate = useNavigate();
 	async function logoutClicked() {
     await signOut();
@@ -30,17 +36,17 @@ return (
 					<i className="fa fa-home"></i>
 				</span>
 			</a>
-			<OrgDropDown />
+			<OrgDropDown id={""} />
 
 			<a className="navbar-item" href="/dashboard">
 				Dashboard
 			</a>
 
-			<a className="navbar-item">
+			<a className="navbar-item" href="/teams">
 				Teams
 			</a>
 
-			<a className="navbar-item">
+			<a className="navbar-item" href="/settings">
 				Settings
 			</a>
 		</div>
@@ -56,7 +62,7 @@ return (
 				<span className="icon">
 					<i className="fas fa-life-ring"></i>
 				</span>
-				<AccountDropDown logoutClicked={logoutClicked} />
+				<AccountDropDown logoutClicked={logoutClicked} picture={picture} />
 			</div>
 		</div>
 	</div>

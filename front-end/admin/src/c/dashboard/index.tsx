@@ -1,10 +1,8 @@
 import DashboardSidebar from "./DashboardSidebar";
-import Nav from "../nav";
 
 export default function Dashboard() {
 return (
 	<div className="container">
-		<Nav />
         <div className="columns">
             <DashboardSidebar/>
             <div className="column is-9">

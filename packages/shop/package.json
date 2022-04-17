@@ -1,0 +1,32 @@
+{
+  "name": "@graphcommerce/shop",
+  "version": "0.0.1",
+  "description": "Shops managment module",
+  "keywords": [
+    "graph",
+    "commerce",
+    "neo4j"
+  ],
+  "author": "José Cordeiro <joseantcordeiro@pm.me>",
+  "homepage": "https://github.com/joseantcordeiro/graphcommerce#readme",
+  "license": "GPL-3.0",
+  "main": "lib/main.js",
+  "typings": "lib/main.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joseantcordeiro/graphcommerce.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/joseantcordeiro/graphcommerce/issues"
+  }
+}

@@ -6,8 +6,8 @@ Session.addAxiosInterceptors(axios);
 export default function CallAPIView() {
     async function callAPIClicked() {
         // this will also automatically refresh the session if needed
-        let response = await axios.get(getApiDomain() + "/auth/sessioninfo");
-        window.alert("Session Information:\n" + JSON.stringify(response.data, null, 2));
+        let response = await axios.get(getApiDomain() + "/person");
+        window.alert("Session Information:\n" + JSON.stringify(response, null, 2));
     }
 
     return (

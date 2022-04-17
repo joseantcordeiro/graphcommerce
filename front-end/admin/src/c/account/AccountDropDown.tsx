@@ -1,5 +1,11 @@
-export default function AccountDropDown(props: { logoutClicked: any; }) {
+interface IProps {
+	logoutClicked: any;
+	picture: string;
+}
+
+export default function AccountDropDown(props: IProps) {
 	let logoutClicked = props.logoutClicked;
+	let image = 'http://' + props.picture;
 	
 	let state = {
 		items: [
@@ -13,7 +19,7 @@ return (
 <div className="navbar-item has-dropdown is-hoverable">
 	<a className="navbar-link">
 		<figure className="image is-24x24">
-			<img className="is-rounded" src="https://bulma.io/images/placeholders/24x24.png" alt=""/>
+			<img className="is-rounded" src={image} alt=""/>
 		</figure>
 	</a>
 

@@ -1,33 +1,54 @@
-export default function OrgDropDown() {
-	
-    let state = {
-    	items: [
-      	{ name: "Learn JavaScript", id: "gkgkgk", active: "navbar-item is-active" },
-        { name: "Learn React", id: "asfssfaf", active: "navbar-item" },
-        { name: "Play around in JSFiddle", id: "asfagbsbd", active: "navbar-item" },
-        { name: "Build something awesome", id: "jopjibboibik", active: "navbar-item" }
-      ]
-    }
+import axios from "axios";
+import { Component } from "react";
+import Session from "supertokens-auth-react/recipe/session";
+import { getApiDomain } from "../../App";
+Session.addAxiosInterceptors(axios);
 
-
-	return (
-	<div className="navbar-item has-dropdown is-hoverable">
-		<a className="navbar-link">
-			Organizations
-		</a>
-
-		<div className="navbar-dropdown">
-		{state.items.map(item => (
-			<a className={item.active} id={item.id}>
-				{item.name}
-			</a>
-		))}
-			<hr className="navbar-divider" />
-			<a className="navbar-item">
-				Create
-			</a>
-		</div>
-	</div>
-	)
-
+interface IProps {
+  id: string
 }
+
+interface IState {
+	data: { name: string,	id: string }[]
+}
+
+export default class OrgDropDown extends Component<IProps, IState> {
+	constructor(props: IProps) {
+    super(props)
+    this.state = { data: [] };
+  }
+	async componentDidMount() {
+    try {
+      const response = await axios.get(getApiDomain() + "/organization");
+			if (response.statusText !== "OK") {
+        throw Error(response.statusText);
+      }
+      this.setState({ data: response.data.organizations });
+    } catch (error) {
+      console.log(error);
+    }
+	}
+
+	render() {
+		return (
+		<div className="navbar-item has-dropdown is-hoverable">
+			<a className="navbar-link">
+				Organizations
+			</a>
+
+			<div className="navbar-dropdown">
+			{this.state.data.map(item => (
+				<a className="navbar-item" id={item.id}>
+					{item.name}
+				</a>
+			))}
+				<hr className="navbar-divider" />
+				<a className="navbar-item" href="/organization/create">
+					Create
+				</a>
+			</div>
+		</div>
+		)
+	}
+}
+
