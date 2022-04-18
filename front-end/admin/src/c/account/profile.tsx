@@ -2,30 +2,58 @@ import axios from "axios";
 import { Component } from "react";
 import Session from "supertokens-auth-react/recipe/session";
 import { getApiDomain } from "../../App";
-
-import DefaultLanguage from './defaultlanguage'
+import {
+	Formik,
+	Form,
+	Field,
+} from 'formik';
+import * as Yup from 'yup';
+import CurrentUser from '../../i/CurrentUser';
 import ProfilePicture from './profilepicture'
 
 Session.addAxiosInterceptors(axios);
 
 interface IProps {
-  name: string,
-	picture: string
+  currentUser: CurrentUser;
 }
 
 interface IState {
-	picture: string,
-	name: string
+	languages: { alpha_2: string,	name: string }[];
 }
+
+interface FormValues {
+	name: string;
+	defaultLanguage: string;
+}
+
+const ValidatorSchema = Yup.object().shape({
+	name: Yup.string()
+		.min(8, 'Too Short!')
+		.max(100, 'Too Long!')
+		.required('Required'),
+});
 
 export default class Profile extends Component<IProps, IState> {
 	constructor(props: IProps) {
     super(props)
-    this.state = { picture: this.props.picture, name: this.props.name };
+    this.state = { languages: [], };
   }
 
+	async componentDidMount() {
+    try {
+      let res = await axios.get(getApiDomain() + "/languages");
+			if (res.statusText !== "OK") {
+        throw Error(res.statusText);
+      }
+      this.setState({ languages: res.data.languages });
+    } catch (error) {
+      console.log(error);
+    }
+	}
+
 	render() {
-		const image = this.state.picture;
+		const image = this.props.currentUser.picture;
+		let initialValues: FormValues = { name: this.props.currentUser.name, defaultLanguage: 'en' };
 		return (
 			<div className="container">
 				<div className="columns is-centered">
@@ -35,18 +63,47 @@ export default class Profile extends Component<IProps, IState> {
 						</div>
 					</div>
 					<div className="column">
-					<form className="box">
-						<div className="field">
-							<label className="label">Name</label>
-							<div className="control">
-								<input className="input" type="text" defaultValue={this.state.name} placeholder={this.state.name} />
+					<div className="box">
+					<Formik
+					initialValues={initialValues}
+					validationSchema={ValidatorSchema}
+					onSubmit={async (values, actions) => {
+						console.log({ values, actions });
+						let res = await axios.patch(getApiDomain() + "/person", values);
+						/** if (res.statusText !== "OK") {
+							throw Error(res.statusText);
+						} */
+						alert('Profile updated!');
+						actions.setSubmitting(false);
+					}}
+				>	
+				{({ errors, touched }) => (
+					<Form>
+					<div className="field">
+						<label htmlFor="name">Full Name</label>
+						<div className="control">
+							<Field className="input" id="name" name="name" placeholder="Full Name" />
+							{errors.name && touched.name ? <div className="notification is-danger is-light"><button className="delete"></button>{errors.name}</div> : null}
+						</div>
+					</div>
+					<div className="field">
+						<label className="label">Default Language</label>
+						<div className="control">
+							<div className="select">
+								<Field as="select" name="defaultLanguage">
+									{this.state.languages.map(item => (
+										<option value={item.alpha_2}>{item.name}</option>
+									))}
+								</Field>
+
 							</div>
 						</div>
-
-						<DefaultLanguage alpha_2={''} />
-
-						<button className="button is-primary">Update</button>
-					</form>
+					</div>
+						<button className="button is-primary" type="submit">Update Profile</button>
+					</Form>
+					)}
+					</Formik>
+					</div>
 					</div>
 				</div>
 			</div>

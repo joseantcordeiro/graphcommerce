@@ -13,9 +13,14 @@ import { AuthController } from '../../controller/auth';
 import { ConfigService } from '@nestjs/config';
 import { PersonService } from '../../service/person';
 import { PersonModule } from '../person';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
-	imports: [],
+	imports: [
+		BullModule.registerQueue({
+      name: 'person',
+    }),
+	],
   providers: [SupertokensService, AuthService],
   exports: [],
   controllers: [AuthController],

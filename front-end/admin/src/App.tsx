@@ -10,6 +10,9 @@ import SessionExpiredPopup from "./c/SessionExpiredPopup";
 import Profile from "./c/account/profile";
 import axios from "axios";
 import Nav from "./c/nav";
+import Onboarding from "./c/onboarding/Onboarding";
+import CreateOrganization from "./c/orgs/create";
+import CurrentUser from "./i/CurrentUser";
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 8000;
@@ -30,25 +33,46 @@ SuperTokens.init({
         websiteDomain: getWebsiteDomain(), // TODO: Change to your app's website domain
     },
     recipeList: [
-        EmailPassword.init({
-            emailVerificationFeature: {
-                mode: "REQUIRED",
-            },
-        }),
+			EmailPassword.init({
+					emailVerificationFeature: {
+						mode: "REQUIRED",
+					},
+					/**
+					getRedirectionURL: async (context) => {
+						if (context.action === "RESET_PASSWORD") {
+								// called when the user clicked on the forgot password button
+						} else if (context.action === "SIGN_IN_AND_UP") {
+								// called when the user is navigating to sign in / up page
+						} else if (context.action === "SUCCESS") {
+								// called on a successful sign in / up. Where should the user go next?
+								let redirectToPath = context.redirectToPath;
+								if (redirectToPath !== undefined) {
+										// we are navigating back to where the user was before they authenticated
+										return redirectToPath;
+								}
+								if (context.isNewUser) {
+										// user signed up
+										return "/organization/create"
+								} else {
+										// user signed in
+										return "/dashboard"
+								}
+						} else if (context.action === "VERIFY_EMAIL") {
+								// called when the user is to be shown the verify email screen
+						}
+						// return undefined to let the default behaviour play out
+						return undefined;
+					} */
+				}),
         Session.init(),
     ],
 });
 
 Session.addAxiosInterceptors(axios);
 
-interface CurrentUser {
-  name: string,
-	picture: string
-}
-
 function App() {
   let [showSessionExpiredPopup, updateShowSessionExpiredPopup] = useState(false);
-	let [currentUser, updateCurrentUser] = useState<CurrentUser>({ name: "", picture: "" });
+	let [currentUser, updateCurrentUser] = useState<CurrentUser>({ id: "", name: "", email: "", picture: "" });
 	let { userId, doesSessionExist } = useSessionContext();
 
 	async function callAPI() {
@@ -57,7 +81,7 @@ function App() {
 			if (response.statusText !== "OK") {
 				throw Error(response.statusText);
 			}
-			updateCurrentUser({ name: response.data.persons[0].name, picture: response.data.persons[0].picture });
+			updateCurrentUser({ id: response.data.persons[0].id, name: response.data.persons[0].name, email: response.data.persons[0].email, picture: response.data.persons[0].picture });
 		} catch (error) {
 			console.log(error);
 		}
@@ -86,7 +110,7 @@ function App() {
                     onSessionExpired={() => {
                       updateShowSessionExpiredPopup(true);
                     }}>
-                    <Home />
+                    <Home currentUser={currentUser} />
                     {showSessionExpiredPopup && <SessionExpiredPopup />}
                   </EmailPassword.EmailPasswordAuth>
                 }
@@ -117,7 +141,39 @@ function App() {
                     onSessionExpired={() => {
                       updateShowSessionExpiredPopup(true);
                     }}>
-                    <Profile name={currentUser.name} picture={currentUser.picture} />
+                    <Profile currentUser={currentUser}  />
+                    {showSessionExpiredPopup && <SessionExpiredPopup />}
+                  </EmailPassword.EmailPasswordAuth>
+                }
+              />
+
+							<Route
+                path="/onboarding"
+                element={
+                                /* This protects the "/" route so that it shows 
+                                <Home /> only if the user is logged in.
+                                Else it redirects the user to "/auth" */
+                  <EmailPassword.EmailPasswordAuth
+                    onSessionExpired={() => {
+                      updateShowSessionExpiredPopup(true);
+                    }}>
+                    <Onboarding userId={userId} />
+                    {showSessionExpiredPopup && <SessionExpiredPopup />}
+                  </EmailPassword.EmailPasswordAuth>
+                }
+              />
+
+							<Route
+                path="/organization/create"
+                element={
+                                /* This protects the "/" route so that it shows 
+                                <Home /> only if the user is logged in.
+                                Else it redirects the user to "/auth" */
+                  <EmailPassword.EmailPasswordAuth
+                    onSessionExpired={() => {
+                      updateShowSessionExpiredPopup(true);
+                    }}>
+                    <CreateOrganization userId={userId} />
                     {showSessionExpiredPopup && <SessionExpiredPopup />}
                   </EmailPassword.EmailPasswordAuth>
                 }

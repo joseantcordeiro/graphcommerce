@@ -4,11 +4,13 @@ import Session from 'supertokens-node/recipe/session';
 import EmailPassword from 'supertokens-node/recipe/emailpassword';
 
 import { ConfigInjectionToken, AuthModuleConfig } from '../../config/auth';
-import { PersonService } from '../person';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class SupertokensService {
-  constructor(@Inject(ConfigInjectionToken) private config: AuthModuleConfig, @Inject(PersonService) private personService: PersonService) {
+  constructor(@Inject(ConfigInjectionToken) private config: AuthModuleConfig,
+							@InjectQueue('person') private readonly personQueue: Queue) {
 
     supertokens.init({
       appInfo: config.appInfo,
@@ -17,11 +19,55 @@ export class SupertokensService {
         apiKey: config.apiKey,
       },
       recipeList: [
-        EmailPassword.init(),
+        EmailPassword.init({
+					/** 
+					override: {
+						apis: (originalImplementation) => {
+								return {
+										...originalImplementation,
+										signUpPOST: async function (input) {
+
+												if (originalImplementation.signUpPOST === undefined) {
+														throw Error("Should never come here");
+												}
+
+												// First we call the original implementation of signUpPOST.
+												let response = await originalImplementation.signUpPOST(input);
+
+												// Post sign up response, we check if it was successful
+												if (response.status === "OK") {
+														let { id, email } = response.user;
+
+														// These are the input form fields values that the user used while signing up
+														// let formFields = input.formFields;
+														
+														let properties = {
+																userId: id,
+																name: "",
+																email: email,
+																defaultLanguage: "en"
+														};
+
+														this.personQueue.add('signup', {
+															formFields: {
+																properties,
+															}
+														});
+														
+
+												}
+												return response;
+										}
+								}
+						}
+					}, */
+
+				}),
         Session.init({
           jwt: {
             enable: true,
           },
+					
           /** override: {
             functions: (originalImplementation) => {
               return {
@@ -40,35 +86,10 @@ export class SupertokensService {
                 },
               };
             },
-						
-            apis: (originalImplementation) => {
-              return {
-                ...originalImplementation,
-                signUpPOST: async function (input) {
-                  if (originalImplementation.signUpPOST === undefined) {
-                    throw Error('Should never come here');
-                  }
-
-                  // First we call the original implementation of signUpPOST.
-                  const response = await originalImplementation.signUpPOST(
-                    input,
-                  );
-
-                  // Post sign up response, we check if it was successful
-                  if (response.status === 'OK') {
-                    const { id, email } = response.user;
-
-                    // // These are the input form fields values that the user used while signing up
-                    const formFields = input.formFields;
-                    // TODO: post sign up logic - create a User Node in Neo4j
-                  }
-                  return response;
-                },
-              };
-            },
-          }, */
+						 */
         }),
       ],
     });
   }
+
 }

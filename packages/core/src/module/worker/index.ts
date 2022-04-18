@@ -8,6 +8,7 @@ import {
 import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
 import { PictureModule } from '../picture'
+import { PersonQueueModule } from '../person-queue';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from '../mail';
@@ -34,7 +35,6 @@ import { MailModule } from '../mail';
       inject: [ConfigService],
     }),
 		BullModule.forRootAsync({
-			imports: [ConfigModule],
 			useFactory: async (configService: ConfigService) => ({
 				redis: {
 					host: configService.get('QUEUE_HOST'),
@@ -75,6 +75,7 @@ import { MailModule } from '../mail';
 		Neo4jModule.fromEnv(),
 		PictureModule,
 		MailModule,
+		PersonQueueModule,
 	],
   controllers: [],
   providers: [],

@@ -31,7 +31,7 @@ export default class DefaultLanguage extends Component<IProps, IState> {
 
 	render() {
 		return (
-			<div className="field">
+		<div className="field">
 			<label className="label">Default Language</label>
 			<div className="control">
 				<div className="select">
