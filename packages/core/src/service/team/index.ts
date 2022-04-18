@@ -16,7 +16,7 @@ export class TeamService {
 	async get(userId: string): Promise<Team[] | any> {
 		const res = await this.neo4jService.read(
 			`
-			MATCH (p:Person { id: $userId })-[:IS_MEMBER]->(t:Team)
+			MATCH (p:Person { id: $userId })-[:IS_MEMBER_AT]->(t:Team)
 			RETURN t, p
 			`, { userId },
 		);
@@ -28,7 +28,7 @@ export class TeamService {
   async getById(teamId: string): Promise<Team[] | any> {
     const res = await this.neo4jService.read(
       `
-				MATCH (p:Person)-[:IS_MEMBER]->(t:Team {id: $teamId})
+				MATCH (p:Person)-[:IS_MEMBER_AT]->(t:Team {id: $teamId})
         RETURN t, p
         `,
       { teamId },
@@ -41,7 +41,7 @@ export class TeamService {
 	async getUserRoles(userId: string, teamId: string): Promise<string[]> {
 		const res = await this.neo4jService.read(
 			`
-			MATCH (p:Person { id: $userId })-[r:IS_MEMBER]->(t:Team { id: $teamId })
+			MATCH (p:Person { id: $userId })-[r:IS_MEMBER_AT]->(t:Team { id: $teamId })
 			RETURN r.role
 			`,	{ userId, teamId },
 		);
@@ -58,8 +58,8 @@ export class TeamService {
 			WITH p, o, randomUUID() AS uuid
       CREATE (t:Team { id: uuid })
       SET t.name = $properties.name, t.isEnabled = $properties.isEnabled
-			MERGE (t)-[:IS_TEAM { createdAt: datetime() }]->(o)
-			MERGE (p)-[:IS_MEMBER { role: ['MANAGE_TEAM'], since: datetime() }]->(t)
+			MERGE (o)-[:HAS_TEAM { createdAt: datetime() }]->(t)
+			MERGE (p)-[:IS_MEMBER_AT { role: ['MANAGE_TEAM'], since: datetime() }]->(t)
       RETURN t, p
       `,
       {
@@ -81,7 +81,7 @@ export class TeamService {
             MATCH (t:Team { id: $properties.teamId })
             SET t.name = $properties.name, t.isEnabled = $properties.isEnabled, t.updatedAt = datetime()
             RETURN t,
-									 [ (p)-[:IS_MEMBER]->(t) | p ] AS members
+									 [ (p)-[:IS_MEMBER_AT]->(t) | p ] AS members
         `,
       { properties },
     );

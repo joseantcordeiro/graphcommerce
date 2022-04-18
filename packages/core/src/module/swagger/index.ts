@@ -1,6 +1,7 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { CacheModule, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
+import * as redisStore from 'cache-manager-redis-store';
 import { Neo4jModule } from 'nest-neo4j/dist';
 import { HealthController } from '../../controller/health';
 import { DatabaseHealthIndicator } from '../../controller/health/indicator/db';
@@ -19,6 +20,7 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
+import { MetadataModule } from '../metadata';
 
 @Module({
   imports: [
@@ -52,10 +54,24 @@ import { BullModule } from '@nestjs/bull';
 			}),
 			inject: [ConfigService],
 		}),
+		CacheModule.registerAsync({
+			isGlobal: true,
+			useFactory: async (configService: ConfigService) => ({
+					store: redisStore,
+					host: configService.get('REDIS_HOST'),
+					port: configService.get('REDIS_PORT'),
+					password: configService.get('REDIS_PASSWORD'),
+					db: configService.get('REDIS_DB'),
+					// ttl: +configService.get('CACHE_TTL'),
+					// max: +configService.get('MAX_ITEM_IN_CACHE')
+			}),
+			inject: [ConfigService],
+		}),
 		Neo4jModule.fromEnv(),
 		AuthModule.fromEnv(),
 		TerminusModule,
 		ImageUploadModule,
+		MetadataModule,
 		CountriesModule,
 		CurrenciesModule,
 		LanguagesModule,

@@ -43,9 +43,9 @@ export class OrganizationService {
 			SET o.name = $properties.name
 			CREATE (p)-[:OWNS { createdAt: datetime() }]->(o)
 			CREATE (p)-[:WORKS_AT { role: ['MANAGE_ORGANIZATION'], since: datetime() }]->(o)
-			CREATE (c)-[:DEFAULT_COUNTRY]->(o)
-			CREATE (a)-[:DEFAULT_CURRENCY]->(o)
-			CREATE (l)-[:DEFAULT_LANGUAGE]->(o)
+			CREATE (o)-[:HAS_DEFAULT_COUNTRY]->(c)
+			CREATE (o)-[:HAS_DEFAULT_CURRENCY]->(a)
+			CREATE (o)-[:HAS_DEFAULT_LANGUAGE]->(l)
 			RETURN o
 	  `,
       {

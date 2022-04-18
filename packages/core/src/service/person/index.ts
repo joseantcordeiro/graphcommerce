@@ -49,7 +49,7 @@ export class PersonService {
   async find(properties: FindPersonDto): Promise<Person[] | any> {
     const res = await this.neo4jService.read(
       `
-            MATCH (p:Person {email: $properties.email})-[:WORKS_AT]->(o:Organization {id: $properties.organizationId})
+            MATCH (p:Person {email: $properties.email})-[:WORKS_IN]->(o:Organization {id: $properties.organizationId})
             RETURN p
         `,
       { properties },
@@ -61,7 +61,7 @@ export class PersonService {
 	async organization(userId: string): Promise<string | null> {
 		const res = await this.neo4jService.read(
 			`
-			MATCH (p:Person { id: $userId })-[r:WORKS_AT]->(o:Organization)
+			MATCH (p:Person { id: $userId })-[r:WORKS_IN]->(o:Organization)
 			RETURN o.id AS organizationId
 			`,
 		 { userId },
@@ -78,7 +78,7 @@ export class PersonService {
 						WITH l
             CREATE (p:Person { id: $properties.userId })
             SET p.name = $properties.name, p.email = $properties.email
-						CREATE (l)-[:DEFAULT_LANGUAGE]->(p)
+						CREATE (p)-[:HAS_DEFAULT_LANGUAGE]->(l)
             RETURN p
         `,
         {
@@ -97,8 +97,8 @@ export class PersonService {
 						WITH l
             CREATE (p:Person { id: $properties.userId })
             SET p.name = $properties.name, p.email = $properties.email, p.createdAt: datetime()
-						CREATE (p)-[:WORKS_AT { since: datetime() }]->(o:Organization { id: $properties.organizationId })
-						CREATE (l)-[:DEFAULT_LANGUAGE]->(p)
+						CREATE (p)-[:WORKS_IN { since: datetime() }]->(o:Organization { id: $properties.organizationId })
+						CREATE (p)-[:HAS_DEFAULT_LANGUAGE]->(l)
             RETURN p
         `,
         {
@@ -112,7 +112,7 @@ export class PersonService {
   async update(properties: UpdatePersonDto): Promise<Person[] | any> {
     const res = await this.neo4jService.write(
       `
-            MATCH (p:Person { id: $properties.userId })-[r:WORKS_AT]->(o:Organization { id: $properties.organizationId })
+            MATCH (p:Person { id: $properties.userId })-[r:WORKS_IN]->(o:Organization { id: $properties.organizationId })
 						WITH p, r
             SET p.name = $properties.name, p.email = $properties.email
 						SET r.updatedAt = datetime()

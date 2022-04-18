@@ -1,0 +1,106 @@
+import { Body, CacheInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Patch, Post, Session, UseGuards, UseInterceptors } from '@nestjs/common';
+import { CreateMetadataDto } from '../../dto/metadata/create';
+import { UpdateMetadataDto } from '../../dto/metadata/update';
+import { DeleteMetadataDto } from '../../dto/metadata/delete';
+import { GetMetadataDto } from '../../dto/metadata/get';
+import { MetadataService } from '../../service/metadata';
+import { AuthGuard } from '../../guard/auth';
+import { SessionContainer } from 'supertokens-node/recipe/session';
+
+@Controller('metadata')
+@UseInterceptors(CacheInterceptor)
+export class MetadataController {
+  constructor(private readonly metadataService: MetadataService) {}
+
+  @Post()
+	@UseGuards(AuthGuard)
+  async postMetadata(
+		@Session() session: SessionContainer,
+    @Body() properties: CreateMetadataDto,
+  ) {
+		const userId = session.getUserId();
+		let metadata = await this.metadataService.getMetadata(properties);
+		if (Array.isArray(metadata)) {
+			throw new HttpException('Metadata with this key already exists for the object', HttpStatus.BAD_REQUEST);
+		}
+    metadata = await this.metadataService.createMetadata(userId, properties);
+		if (Array.isArray(metadata)) {
+			return {
+				objectId: properties.objectId,
+				metadata: metadata.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Metadata couldn\'t be added', HttpStatus.NOT_MODIFIED);
+  }
+
+  @Delete()
+	@UseGuards(AuthGuard)
+  async deleteMetadata(
+    @Body() properties: DeleteMetadataDto,
+  ) {
+    await this.metadataService.deleteMetadata(properties);
+		return {
+			objectId: properties.objectId,
+			key: properties.key,
+			message: 'Metadata deleted',
+		}
+  }
+
+	@Patch()
+	async updateMetadata(
+		@Body() properties: UpdateMetadataDto,
+	) {
+		const metadata = await this.metadataService.updateMetadata(properties);
+		if (Array.isArray(metadata)) {
+			return {
+				objectId: properties.objectId,
+				metadata: metadata.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Metadata couldn\'t be updated', HttpStatus.NOT_MODIFIED);
+	}
+
+  @Get()
+	@UseGuards(AuthGuard)
+  async getMetadata(
+    @Body() properties: GetMetadataDto,
+  ) {
+    const metadata = await this.metadataService.getMetadata(properties);
+		if (Array.isArray(metadata)) {
+			return {
+				objectId: properties.objectId,
+				metadata: metadata.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Metadata couldn\'t be found', HttpStatus.NOT_FOUND);
+  }
+
+	@Get('public')
+  async getPublicMetadata(
+    @Body() properties: GetMetadataDto,
+  ) {
+    const metadata = await this.metadataService.getPublicMetadata(properties);
+		if (Array.isArray(metadata)) {
+			return {
+				objectId: properties.objectId,
+				metadata: metadata.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Metadata couldn\'t be found', HttpStatus.NOT_FOUND);
+  }
+
+	@Get('private')
+	@UseGuards(AuthGuard)
+  async getPrivateMetadata(
+    @Body() properties: GetMetadataDto,
+  ) {
+    const metadata = await this.metadataService.getPrivateMetadata(properties);
+		if (Array.isArray(metadata)) {
+			return {
+				objectId: properties.objectId,
+				metadata: metadata.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Metadata couldn\'t be found', HttpStatus.NOT_FOUND);
+  }
+}

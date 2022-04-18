@@ -1,11 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { Node } from "neo4j-driver";
 
 export class Metadata {
+  constructor(private readonly node: Node) {}
 
-	@ApiProperty()
-  key: string;
-
-	@ApiProperty()
-  value: string;
-	
+	toJson() {
+    return {
+      ...this.node.properties,
+    };
+  }
 }

@@ -20,6 +20,7 @@ import {
 import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
 import { TeamModule } from '../team';
+import { MetadataModule } from '../metadata';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { TeamModule } from '../team';
 		CountriesModule,
 		CurrenciesModule,
 		LanguagesModule,
+		MetadataModule,
 		PersonModule,
 		OrganizationModule,
 		TeamModule,
