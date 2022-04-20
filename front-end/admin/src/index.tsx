@@ -7,6 +7,17 @@ const container = document.getElementById('root');
 // create a root
 const root = ReactDOM.createRoot(container!);
 //render app to root
+/**
+const MainApp = () => {
+	return (
+		<Fragment>
+			<UserGlobalContextProvider>
+				<App />
+			</UserGlobalContextProvider>
+		</Fragment>
+	)
+}
+ */
 root.render(<App />);
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

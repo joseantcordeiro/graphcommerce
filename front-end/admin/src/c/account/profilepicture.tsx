@@ -11,15 +11,15 @@ interface IState {
 export default class ProfilePicture extends Component<IProps, IState> {
 	constructor(props: IProps) {
     super(props)
-		const image = 'http://' + this.props.image
-    this.state = { picture: image };
+    this.state = { picture: '' };
   }
 
 	render() {
+		const image = 'http://' + this.props.image;
 		return (
 			<div className="content has-text-centered">
 				<figure className="image is-128x128">
-					<img className="is-rounded" src={this.state.picture} alt=""/>
+					<img className="is-rounded" src={image} alt=""/>
 				</figure>
 				<p className="title is-4"></p>
 				<div className="file">

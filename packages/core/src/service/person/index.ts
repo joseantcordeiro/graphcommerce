@@ -8,6 +8,7 @@ import { BufferedFile } from '../../entity/file';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { FindPersonDto } from '../../dto/organization/find';
+import { Organization } from '../../entity/organization';
 
 @Injectable()
 export class PersonService {
@@ -43,10 +44,10 @@ export class PersonService {
 			`,
       { userId },
     );
-    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
+    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : false;
   }
 
-  async find(properties: FindPersonDto): Promise<Person[] | any> {
+  async find(properties: FindPersonDto): Promise<Person[] | boolean> {
     const res = await this.neo4jService.read(
       `
             MATCH (p:Person {email: $properties.email})-[:WORKS_IN]->(o:Organization {id: $properties.organizationId})
@@ -55,21 +56,36 @@ export class PersonService {
       { properties },
     );
 
-    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
+    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : false;
   }
 
-	async organization(userId: string): Promise<string | null> {
+	async organization(userId: string): Promise<Organization[] | any> {
 		const res = await this.neo4jService.read(
 			`
-			MATCH (p:Person { id: $userId })-[r:WORKS_IN]->(o:Organization)
-			RETURN o.id AS organizationId
+			MATCH (p:Person { id: $userId })-[r:WORKS_AT { default: true }]->(o:Organization)
+			RETURN o
 			`,
 		 { userId },
 		);
-		return res.records.length ? res.records[0].get('organizationId') : null;
+		return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
 	
 	}
-	
+
+	async makeDefaultOrganization(userId: string, organizationId: string): Promise<Organization[] | any> {
+		const res = await this.neo4jService.write(
+			`
+			MATCH (p:Person { id: $userId })-[r0:WORKS_AT { default: true }]->(o0:Organization)
+			SET r0.default = false
+			WITH p
+			MATCH (p)-[r1:WORKS_AT]->(o1:Organization { id: $organizationId })
+			SET r1.default = true
+			RETURN o1
+			`,
+			{ userId, organizationId },
+		);
+		return res.records.length ? res.records.map((row) => new Organization(row.get('o1'))) : false;
+	}
+
 	async create(properties: CreatePersonDto): Promise<Person[] | any> {
     const res = await this.neo4jService
       .write(
@@ -86,7 +102,7 @@ export class PersonService {
         },
       );
 
-		return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
+		return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : false;
   }
 
   async createStaff(properties: CreatePersonDto): Promise<Person | undefined> {
@@ -121,7 +137,7 @@ export class PersonService {
       { properties },
     );
     // TODO: Emit Person Updated Event
-    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : {};
+    return res.records.length ? res.records.map((row) => new Person(row.get('p'))) : false;
   }
 
   async delete(userId: string): Promise<any> {

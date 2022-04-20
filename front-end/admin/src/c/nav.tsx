@@ -1,27 +1,32 @@
 import OrgDropDown from "./orgs/dropdown";
 import AccountDropDown from "./account/AccountDropDown";
 import { useNavigate } from "react-router-dom";
+import Session from "supertokens-auth-react/recipe/session";
 import { signOut } from "supertokens-auth-react/recipe/emailpassword";
+import { CurrentUser } from "../i/state-pool/CurrentUserType";
+import axios from "axios";
+
+Session.addAxiosInterceptors(axios);
 
 interface IProps {
-	picture: string;
+	currentUser: CurrentUser;
 }
 
 export default function Nav(props: IProps) {
-	let picture = props.picture;
 
-	console.log(picture);
 	const navigate = useNavigate();
 	async function logoutClicked() {
     await signOut();
     navigate("/auth");
   }
-	
+
 return (
 
 <nav className="navbar is-black" role="navigation" aria-label="main navigation">
 	<div className="navbar-brand">
-	<img src="https://joseantcordeiro.hopto.org/assets/img/logo.png" alt="Graph Commerce" width="48" height="48" />
+		<figure className="image is-48x48">
+			<img className="is-rounded" src="https://joseantcordeiro.hopto.org/assets/img/logo.png" alt=""/>
+		</figure>
 			<a role="button" className="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
 				<span aria-hidden="true"></span>
 				<span aria-hidden="true"></span>
@@ -36,8 +41,7 @@ return (
 					<i className="fa fa-home"></i>
 				</span>
 			</a>
-			<OrgDropDown id={""} />
-
+			<OrgDropDown id={props.currentUser.defaultOrganizationId}/>
 			<a className="navbar-item" href="/dashboard">
 				Dashboard
 			</a>
@@ -62,7 +66,7 @@ return (
 				<span className="icon">
 					<i className="fas fa-life-ring"></i>
 				</span>
-				<AccountDropDown logoutClicked={logoutClicked} picture={picture} />
+				<AccountDropDown logoutClicked={logoutClicked} picture={props.currentUser.picture} />
 			</div>
 		</div>
 	</div>

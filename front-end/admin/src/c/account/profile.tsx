@@ -8,7 +8,7 @@ import {
 	Field,
 } from 'formik';
 import * as Yup from 'yup';
-import CurrentUser from '../../i/CurrentUser';
+import { CurrentUser }from '../../i/state-pool/CurrentUserType';
 import ProfilePicture from './profilepicture'
 
 Session.addAxiosInterceptors(axios);
@@ -52,14 +52,13 @@ export default class Profile extends Component<IProps, IState> {
 	}
 
 	render() {
-		const image = this.props.currentUser.picture;
 		let initialValues: FormValues = { name: this.props.currentUser.name, defaultLanguage: 'en' };
 		return (
 			<div className="container">
 				<div className="columns is-centered">
 					<div className="column is-one-quarter">
 						<div className="box">
-							<ProfilePicture image={image} />
+							<ProfilePicture image={this.props.currentUser.picture} />
 						</div>
 					</div>
 					<div className="column">

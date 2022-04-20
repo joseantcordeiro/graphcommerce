@@ -1,11 +1,14 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { Component } from "react";
 import Session from "supertokens-auth-react/recipe/session";
 import { getApiDomain } from "../../App";
+import cx from "classnames";
+
 Session.addAxiosInterceptors(axios);
 
 interface IProps {
-  id: string
+  id: string;
 }
 
 interface IState {
@@ -17,6 +20,7 @@ export default class OrgDropDown extends Component<IProps, IState> {
     super(props)
     this.state = { data: [] };
   }
+
 	async componentDidMount() {
     try {
       const response = await axios.get(getApiDomain() + "/organization");
@@ -28,7 +32,22 @@ export default class OrgDropDown extends Component<IProps, IState> {
       console.log(error);
     }
 	}
+/** 
+	navigate = useNavigate();
 
+	organizationClicked = async (id: string) => {
+		let values = { organizationId: id };
+		try {
+			const response = await axios.post(getApiDomain() + "/person/organization", values);
+			if (response.statusText !== "OK") {
+				throw Error(response.statusText);
+			}
+			this.navigate("/dashboard");
+		} catch (error) {
+			console.log(error);
+		}
+	}
+*/
 	render() {
 		return (
 		<div className="navbar-item has-dropdown is-hoverable">
@@ -38,7 +57,7 @@ export default class OrgDropDown extends Component<IProps, IState> {
 
 			<div className="navbar-dropdown">
 			{this.state.data.map(item => (
-				<a className="navbar-item" id={item.id}>
+				<a className={cx("navbar-item", item.id === this.props.id && "is-active")} id={item.id} >
 					{item.name}
 				</a>
 			))}

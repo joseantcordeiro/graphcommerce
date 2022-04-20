@@ -1,14 +1,14 @@
 {
-  "name": "@graphcommerce/shop",
+  "name": "@graphcommerce/common",
   "version": "0.0.1",
-  "description": "Shops managment module",
+  "description": "Common utilities to Graph Commerce",
   "keywords": [
     "graph",
     "commerce"
   ],
   "author": "José Cordeiro <joseantcordeiro@pm.me>",
   "homepage": "https://github.com/joseantcordeiro/graphcommerce#readme",
-  "license": "GPL-3.0",
+  "license": "ISC",
   "main": "lib/main.js",
   "typings": "lib/main.d.ts",
   "directories": {
@@ -23,6 +23,7 @@
     "url": "git+https://github.com/joseantcordeiro/graphcommerce.git"
   },
   "scripts": {
+		"tsc": "tsc",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
@@ -31,7 +32,12 @@
   "dependencies": {
     "@nestjs/common": "^8.4.4",
     "@nestjs/core": "^8.4.4",
+    "neo4j-driver": "^4.4.5",
+    "nest-neo4j": "^0.1.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.5.5"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.3"
   }
 }

@@ -57,10 +57,14 @@ export class PersonController {
   async getPerson(@Session() session: SessionContainer) {
     const userId = session.getUserId();
     const person = await this.personService.get(userId);
-		if (Array.isArray(person)) {
-			return {
-				persons: person.map(m => m.toJson()),
-			};
+		const defaultOrganization = await this.personService.organization(userId);
+		if (Array.isArray(defaultOrganization)) {
+			if (Array.isArray(person)) {
+				return {
+					persons: person.map(m => m.toJson()),
+					defaultOrganization: defaultOrganization.map(m => m.toJson()),
+				};
+			}
 		}
 		throw new HttpException('Something is wrong, try to refresh the session.', HttpStatus.NOT_FOUND);
   }
@@ -95,6 +99,33 @@ export class PersonController {
     }
 		throw new HttpException('You need to have the MANAGE_ORGANIZATION role', HttpStatus.FORBIDDEN);
   }
+
+	@UseGuards(AuthGuard)
+	@Post('organization')
+	async makeDefaultOrganization(@Session() session: SessionContainer,
+		@Body() properties: {organizationId: string}) {
+		const userId = session.getUserId();
+		const defaultOrganization = await this.personService.makeDefaultOrganization(userId, properties.organizationId);
+		if (Array.isArray(defaultOrganization)) {
+			return {
+				defaultOrganization: defaultOrganization.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Something is wrong, try to refresh the session.', HttpStatus.NOT_FOUND);
+	}
+
+	@UseGuards(AuthGuard)
+	@Get('organization')
+	async getOrganization(@Session() session: SessionContainer) {
+		const userId = session.getUserId();
+		const defaultOrganization = await this.personService.organization(userId);
+		if (Array.isArray(defaultOrganization)) {
+			return {
+				defaultOrganization: defaultOrganization.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Something is wrong, try to refresh the session.', HttpStatus.NOT_FOUND);
+	}
 
   @UseGuards(AuthGuard)
   @Delete()

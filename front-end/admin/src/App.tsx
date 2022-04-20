@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Routes, BrowserRouter as Router, Route } from "react-router-dom";
 import SuperTokens, { getSuperTokensRoutesForReactRouterDom } from "supertokens-auth-react";
 import EmailPassword from "supertokens-auth-react/recipe/emailpassword";
@@ -12,7 +12,8 @@ import axios from "axios";
 import Nav from "./c/nav";
 import Onboarding from "./c/onboarding/Onboarding";
 import CreateOrganization from "./c/orgs/create";
-import CurrentUser from "./i/CurrentUser";
+import { createGlobalstate, useGlobalStateReducer } from "state-pool";
+import { CurrentUser } from "./i/state-pool/CurrentUserType";
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 8000;
@@ -38,6 +39,20 @@ SuperTokens.init({
 						mode: "REQUIRED",
 					},
 					/**
+					onHandleEvent: async (context) => {
+						if (context.action === "SESSION_ALREADY_EXISTS") {
+								// TODO:
+						} else {
+								if (context.action === "SUCCESS") {
+										if (context.isNewUser) {
+												// TODO: Sign up
+										} else {
+												// TODO: Sign in
+										}
+								}
+						}
+					}
+					
 					getRedirectionURL: async (context) => {
 						if (context.action === "RESET_PASSWORD") {
 								// called when the user clicked on the forgot password button
@@ -70,32 +85,41 @@ SuperTokens.init({
 
 Session.addAxiosInterceptors(axios);
 
+const initialGlobalState = { userId: "", name: "", email: "", picture: "", defaultOrganizationId: ""};
+Session.addAxiosInterceptors(axios);
+
+const loadUserData = async ()  => {
+
+  try {
+    const response = await axios.get(getApiDomain() + "/person");
+		if (response.statusText !== "OK") {
+			throw Error(response.statusText);
+		}
+		return( {
+			id: response.data.persons[0].id,
+			name: response.data.persons[0].name,
+			email: response.data.persons[0].email,
+			picture: response.data.persons[0].picture,
+			defaultOrganizationId: response.data.persons[0].defaultOrganizationId
+		});
+  } catch (err) {
+    console.log(err);
+  }
+	return(initialGlobalState);
+};
+
+const currentUser = createGlobalstate<CurrentUser>(initialGlobalState);
+
 function App() {
   let [showSessionExpiredPopup, updateShowSessionExpiredPopup] = useState(false);
-	let [currentUser, updateCurrentUser] = useState<CurrentUser>({ id: "", name: "", email: "", picture: "" });
 	let { userId, doesSessionExist } = useSessionContext();
-
-	async function callAPI() {
-		try {
-			const response = await axios.get(getApiDomain() + "/person");
-			if (response.statusText !== "OK") {
-				throw Error(response.statusText);
-			}
-			updateCurrentUser({ id: response.data.persons[0].id, name: response.data.persons[0].name, email: response.data.persons[0].email, picture: response.data.persons[0].picture });
-		} catch (error) {
-			console.log(error);
-		}
-	}
-
-	useEffect(() => {
-    callAPI();
-  }, [])
+	let [user, dispatch] = useGlobalStateReducer<CurrentUser>(loadUserData, currentUser);
 
   return (
     <div className="App">
         <Router>
           <div className="fill">
-						{!doesSessionExist ? <Nav picture={currentUser.picture} /> : null}
+						{!doesSessionExist ? <Nav currentUser={user} /> : null}
             <Routes>
               {/* This shows the login UI on "/auth" route */}
               {getSuperTokensRoutesForReactRouterDom(require("react-router-dom"))}
@@ -110,7 +134,7 @@ function App() {
                     onSessionExpired={() => {
                       updateShowSessionExpiredPopup(true);
                     }}>
-                    <Home currentUser={currentUser} />
+                    <Home currentUser={user} />
                     {showSessionExpiredPopup && <SessionExpiredPopup />}
                   </EmailPassword.EmailPasswordAuth>
                 }
@@ -141,7 +165,7 @@ function App() {
                     onSessionExpired={() => {
                       updateShowSessionExpiredPopup(true);
                     }}>
-                    <Profile currentUser={currentUser}  />
+                    <Profile currentUser={user}  />
                     {showSessionExpiredPopup && <SessionExpiredPopup />}
                   </EmailPassword.EmailPasswordAuth>
                 }

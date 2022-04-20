@@ -17,7 +17,7 @@ export class OrganizationService {
 			  `,
         { userId },
       );
-			return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : {};
+			return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
   }
 
 	async getOrganizationRoles(userId: string, organizationId: string): Promise<string[]> {
@@ -42,7 +42,7 @@ export class OrganizationService {
 			CREATE (o:Organization { id: uuid })
 			SET o.name = $properties.name
 			CREATE (p)-[:OWNS { createdAt: datetime() }]->(o)
-			CREATE (p)-[:WORKS_AT { role: ['MANAGE_ORGANIZATION'], since: datetime() }]->(o)
+			CREATE (p)-[:WORKS_AT { role: ['MANAGE_ORGANIZATION'], default: false, since: datetime() }]->(o)
 			CREATE (o)-[:HAS_DEFAULT_COUNTRY]->(c)
 			CREATE (o)-[:HAS_DEFAULT_CURRENCY]->(a)
 			CREATE (o)-[:HAS_DEFAULT_LANGUAGE]->(l)
@@ -54,7 +54,7 @@ export class OrganizationService {
       },
     );
 
-		return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : {};
+		return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
 
   }
 
@@ -74,7 +74,7 @@ export class OrganizationService {
       },
     );
 
-    return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : {};
+    return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
   }
 
   async delete(userId: string): Promise<any> {
