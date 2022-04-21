@@ -28,7 +28,8 @@ import { Queue } from 'bull';
 @UseInterceptors(CacheInterceptor)
 export class PersonController {
   constructor(private readonly personService: PersonService,
-		@InjectQueue('mail') private readonly mailQueue: Queue,) {}
+		@InjectQueue('mail') private readonly mailQueue: Queue,
+		@InjectQueue('person') private readonly personQueue: Queue) {}
 
   @UseGuards(AuthGuard)
   @Post()
@@ -40,6 +41,9 @@ export class PersonController {
 		if (userId === properties.userId) {
 			const person = await this.personService.create(properties);
 			if (Array.isArray(person)) {
+				this.personQueue.add('create', {
+					person,
+				});
 				this.mailQueue.add('welcome', {
 					email: person[0].getEmail(),
 					name: person[0].getName(),
@@ -91,6 +95,9 @@ export class PersonController {
     if (userId === properties.userId) {
     	const person = await this.personService.update(properties);
 			if (Array.isArray(person)) {
+				this.personQueue.add('update', {
+					userId: userId, person: person,
+				});
 				return {
 					persons: person.map(m => m.toJson()),
 				};
@@ -107,6 +114,9 @@ export class PersonController {
 		const userId = session.getUserId();
 		const defaultOrganization = await this.personService.makeDefaultOrganization(userId, properties.organizationId);
 		if (Array.isArray(defaultOrganization)) {
+			this.personQueue.add('organizationdefault', {
+				userId: userId, organization: defaultOrganization,
+			});
 			return {
 				defaultOrganization: defaultOrganization.map(m => m.toJson()),
 			};
@@ -132,6 +142,9 @@ export class PersonController {
   async deletePerson(@Session() session: SessionContainer) {
     const userId = session.getUserId();
     const deleted = await this.personService.delete(userId);
+		this.personQueue.add('update', {
+			userId: userId, person: deleted,
+		});
     return {
       ...deleted.toJson(),
     };

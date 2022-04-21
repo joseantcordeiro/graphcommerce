@@ -9,6 +9,9 @@ import { BullModule } from '@nestjs/bull';
 	imports: [
 		MinioClientModule,
 		BullModule.registerQueue({
+      name: 'person',
+    }),
+		BullModule.registerQueue({
       name: 'picture',
     }),
 		BullModule.registerQueue({

@@ -20,12 +20,16 @@ import { SessionContainer } from 'supertokens-node/recipe/session';
 import { Role } from '../../enum/role';
 import { Roles } from '../../decorator/role';
 import { RolesGuard } from '../../guard/role';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 
 @Controller('organization')
 @UseInterceptors(CacheInterceptor)
 export class OrganizationController {
-  constructor(private readonly organizationService: OrganizationService) {}
+  constructor(private readonly organizationService: OrganizationService,
+		@InjectQueue('organization') private readonly organizationQueue: Queue,
+		) {}
 
   @Get()
   @UseGuards(AuthGuard)
@@ -52,6 +56,9 @@ export class OrganizationController {
       properties,
     );
 		if (Array.isArray(organizations)) {
+			this.organizationQueue.add('create', {
+				userId: userId, organization: organizations,
+			});
 			return {
 				organizations: organizations.map(m => m.toJson()),
 			};
@@ -68,6 +75,9 @@ export class OrganizationController {
   ) {
 			const organizations = await this.organizationService.update(properties);
 			if (Array.isArray(organizations)) {
+				this.organizationQueue.add('update', {
+					organization: organizations,
+				});
 				return {
 					organizations: organizations.map(m => m.toJson()),
 				};
@@ -82,6 +92,9 @@ export class OrganizationController {
 	@UseGuards(RolesGuard)
   async deleteOrganization(@Session() session: SessionContainer) {
     const userId = session.getUserId();
+		this.organizationQueue.add('delete', {
+			userId: userId,
+		});
     return this.organizationService.delete(userId);
   }
 }

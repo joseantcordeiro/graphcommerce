@@ -19,11 +19,14 @@ import { TeamService } from '../../service/team';
 import { AuthGuard } from '../../guard/auth';
 import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Controller('team')
 @UseInterceptors(CacheInterceptor)
 export class TeamController {
-  constructor(private readonly teamService: TeamService) {}
+  constructor(@InjectQueue('team') private readonly teamQueue: Queue,
+		private readonly teamService: TeamService) {}
 
   @UseGuards(AuthGuard)
   @Post()
@@ -38,6 +41,9 @@ export class TeamController {
     );
 
 		if (Array.isArray(teams)) {
+			this.teamQueue.add('create', {
+				userId: userId, team: teams,
+			});
 			return {
 				teams: teams.map(m => m.toJson()),
 			};
@@ -56,6 +62,9 @@ export class TeamController {
 		if (roles.includes('MANAGE_TEAM')) {
 			const teams = await this.teamService.update(properties);
 			if (Array.isArray(teams)) {
+				this.teamQueue.add('update', {
+					userId: userId, team: teams,
+				});
 				return {
 					teams: teams.map(m => m.toJson()),
 				};

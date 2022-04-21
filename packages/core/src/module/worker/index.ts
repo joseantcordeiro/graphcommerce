@@ -7,11 +7,9 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
-import { PictureModule } from '../picture'
-import { PersonQueueModule } from '../person-queue';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { MailModule } from '../mail';
+import { ProcessorQueueModule } from '../processor';
 
 @Module({
   imports: [
@@ -73,9 +71,7 @@ import { MailModule } from '../mail';
       inject: [ConfigService],
     }),
 		Neo4jModule.fromEnv(),
-		PictureModule,
-		MailModule,
-		PersonQueueModule,
+		ProcessorQueueModule,
 	],
   controllers: [],
   providers: [],
