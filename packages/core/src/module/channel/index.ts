@@ -14,6 +14,6 @@ import { BullModule } from '@nestjs/bull';
 	],
   providers: [ChannelService],
   controllers: [ChannelController],
-	exports: [ChannelService],
+	exports: [],
 })
 export class ChannelModule {}

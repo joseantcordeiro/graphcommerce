@@ -21,6 +21,7 @@ import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
 import { TeamModule } from '../team';
 import { MetadataModule } from '../metadata';
+import { ChannelModule } from '../channel';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { MetadataModule } from '../metadata';
 		PersonModule,
 		OrganizationModule,
 		TeamModule,
+		ChannelModule,
 	],
   controllers: [HealthController],
   providers: [DatabaseHealthIndicator],

@@ -1,4 +1,3 @@
-import { InjectQueue } from '@nestjs/bull';
 import {
   Controller,
   Get,
@@ -13,40 +12,57 @@ import {
 	CacheInterceptor,
 } from '@nestjs/common';
 import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 import { ChannelService } from '../../service/channel';
-import { OrganizationService } from '../../service/organization';
-/** import { CreateChannelDto } from '../../dto/channel/create';
+import { CreateChannelDto } from '../../dto/channel/create';
 import { UpdateChannelDto } from '../../dto/channel/update';
 import { AuthGuard } from '../../guard/auth';
+import { RolesGuard } from '../../guard/role';
+import { Role } from '../../enum/role';
+import { Roles } from '../../decorator/role';
 import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
 import { DeleteChannelDto } from '../../dto/channel/delete';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
-import { OrganizationService } from '../../service/organization'; */
+import { GetChannelDto } from '../../dto/channel/get';
+
 
 @Controller('channel')
 @UseInterceptors(CacheInterceptor)
 export class ChannelController {
-  constructor(@InjectQueue('channel') private readonly channelQueue: Queue,
-		private readonly channelService: ChannelService,
-		private readonly organizationService: OrganizationService) {}
-/**
+  	constructor(@InjectQueue('channel') private readonly channelQueue: Queue,
+		private readonly channelService: ChannelService) {}
+
   @Get()
   @UseGuards(AuthGuard)
-  async getChannel(@Session() session: SessionContainer) {
-    const userId = session.getUserId();
-    const channels = await this.channelService.get(userId);
+	@Roles(Role.MANAGE_ORGANIZATION, Role.MANAGE_CHANNELS)
+	@UseGuards(RolesGuard)
+  async getChannel(@Body() properties: GetChannelDto,) {
+    const channels = await this.channelService.get(properties);
 		if (Array.isArray(channels)) {
 			return {
-				organizations: channels.map(m => m.toJson()),
+				channels: channels.map(m => m.toJson()),
 			};
 		}
-		throw new HttpException('You is not a member of any organization', HttpStatus.NOT_FOUND);
+		throw new HttpException('Channel not found!', HttpStatus.NOT_FOUND);
+  }
+
+	@Get('list')
+  @UseGuards(AuthGuard)
+  async listChannels(@Session() session: SessionContainer) {
+    const userId = session.getUserId();
+    const channels = await this.channelService.list(userId);
+		if (Array.isArray(channels)) {
+			return {
+				channels: channels.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('You is not a manager of any channel', HttpStatus.NOT_FOUND);
   }
 
   @Post()
   @UseGuards(AuthGuard)
+	@Roles(Role.MANAGE_ORGANIZATION, Role.MANAGE_CHANNELS)
+	@UseGuards(RolesGuard)
   async postChannel(
     @Session() session: SessionContainer,
     @Body() properties: CreateChannelDto,
@@ -57,8 +73,11 @@ export class ChannelController {
       properties,
     );
 		if (Array.isArray(channels)) {
+			this.channelQueue.add('create', {
+				userId: userId, channel: channels,
+			});
 			return {
-				organizations: channels.map(m => m.toJson()),
+				channels: channels.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Channel couldn\'t be created', HttpStatus.NOT_MODIFIED);
@@ -66,44 +85,43 @@ export class ChannelController {
 
   @Patch()
   @UseGuards(AuthGuard)
+	@Roles(Role.MANAGE_ORGANIZATION, Role.MANAGE_CHANNELS)
+	@UseGuards(RolesGuard)
   async patchChannel(
     @Session() session: SessionContainer,
     @Body() properties: UpdateChannelDto,
   ) {
     const userId = session.getUserId();
-		const roles = await this.organizationService.getOrganizationRoles(userId, properties.organizationId);
-		if (roles.includes('MANAGE_ORGANIZATION')) {
-			const organizations = await this.channelService.update(properties);
-			if (Array.isArray(organizations)) {
-				await this.channelQueue.add('update', {
-					userId: userId, channelId: properties.channelId,
-				});
-				return {
-					organizations: organizations.map(m => m.toJson()),
-				};
-			}
-			throw new HttpException('Organization couldn\'t be updated', HttpStatus.NOT_MODIFIED);
+		const channels = await this.channelService.update(properties);
+		if (Array.isArray(channels)) {
+			this.channelQueue.add('update', {
+				userId: userId, channel: channels,
+			});
+			return {
+				channels: channels.map(m => m.toJson()),
+			};
 		}
-
-		throw new HttpException('You need to have the MANAGE_ORGANIZATION role', HttpStatus.FORBIDDEN);
+		throw new HttpException('Organization couldn\'t be updated', HttpStatus.NOT_MODIFIED);
   }
 
   @Delete()
   @UseGuards(AuthGuard)
+	@Roles(Role.MANAGE_ORGANIZATION, Role.MANAGE_CHANNELS)
+	@UseGuards(RolesGuard)
   async deleteChannel(@Session() session: SessionContainer,
 		@Body() properties: DeleteChannelDto,
 	) {
     const userId = session.getUserId();
-    const channelDeleted = this.channelService.delete(properties.channelId);
-		if (!Array.isArray(channelDeleted)) {
-			throw new HttpException('Channel couldn\'t be deleted', HttpStatus.NOT_MODIFIED);
+    const channels = this.channelService.delete(properties);
+		if (Array.isArray(channels)) {
+			this.channelQueue.add('delete', {
+				userId: userId, channelId: properties.channelId, targetChannelId: properties.targetChannelId,
+			});
+			return {
+				message: 'Channel marked to delete',
+				channels: channels.map(c => c.toJson()),
+			}
 		}
-		await this.channelQueue.add('delete', {
-      userId: userId, channelId: properties.channelId, targetChannelId: properties.targetChannelId,
-    });
-		return {
-			channel: channelDeleted.map(c => c.toJson()),
-			message: 'Channel marked to deleted',
-  	}
-	} */
+		throw new HttpException('Channel couldn\'t be deleted', HttpStatus.NOT_MODIFIED);
+	}
 }
