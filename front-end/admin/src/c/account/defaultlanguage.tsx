@@ -19,7 +19,7 @@ export default class DefaultLanguage extends Component<IProps, IState> {
   }
 	async componentDidMount() {
     try {
-      const response = await axios.get(getApiDomain() + "/languages");
+      const response = await axios.get(getApiDomain() + "/api/v1/languages");
 			if (response.statusText !== "OK") {
         throw Error(response.statusText);
       }

@@ -10,6 +10,7 @@ import { SupertokensExceptionFilter } from './filter/auth'
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { GlobalExceptionFilter } from './exception/GlobalExceptionFilter';
+import { RequestMethod, VersioningType } from '@nestjs/common';
 
 export async function bootstrap() {
 
@@ -29,6 +30,14 @@ export async function bootstrap() {
 	const logAllErrors = true;
 	app.useGlobalFilters(new GlobalExceptionFilter(sendInternalServerErrorCause, logAllErrors));
 
+	app.enableVersioning({
+		type: VersioningType.URI,
+	});
+
+	app.setGlobalPrefix('api/v1', {
+		exclude: [{ path: 'health', method: RequestMethod.GET }], // replace your endpoints in the place of health!
+	});
+	
 	app.useGlobalFilters(new SupertokensExceptionFilter());
 	app.useGlobalFilters(new Neo4jErrorFilter());
 	// app.useGlobalPipes(new UnprocessibleEntityValidationPipe());

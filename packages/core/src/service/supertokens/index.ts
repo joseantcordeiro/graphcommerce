@@ -6,6 +6,7 @@ import EmailPassword from 'supertokens-node/recipe/emailpassword';
 import { ConfigInjectionToken, AuthModuleConfig } from '../../config/auth';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { Neo4jService } from 'nest-neo4j/dist';
 
 @Injectable()
 export class SupertokensService {
@@ -20,7 +21,6 @@ export class SupertokensService {
       },
       recipeList: [
         EmailPassword.init({
-					/** 
 					override: {
 						apis: (originalImplementation) => {
 								return {
@@ -40,27 +40,15 @@ export class SupertokensService {
 
 														// These are the input form fields values that the user used while signing up
 														// let formFields = input.formFields;
-														
-														let properties = {
-																userId: id,
-																name: "",
-																email: email,
-																defaultLanguage: "en"
-														};
 
-														this.personQueue.add('signup', {
-															formFields: {
-																properties,
-															}
-														});
-														
+														this.personQueue.add('signup', { id: id, email: email });
 
 												}
 												return response;
 										}
 								}
 						}
-					}, */
+					},
 
 				}),
         Session.init({
@@ -74,20 +62,21 @@ export class SupertokensService {
                 ...originalImplementation,
                 createNewSession: async function (input) {
                   const userId = input.userId;
-                  const organization = await this.personService.organization(userId);
+									const rolesservice = new RolesService(); //
+									const roles = await Roles.getOrganizationRoles(userId);
 
                   // This goes in the access token, and is availble to read on the frontend.
                   input.accessTokenPayload = {
                     ...input.accessTokenPayload,
-                    organization: organization,
+                    role: roles,
                   };
 
                   return originalImplementation.createNewSession(input);
                 },
               };
             },
-						 */
-        }),
+        	}, */
+				}),
       ],
     });
   }

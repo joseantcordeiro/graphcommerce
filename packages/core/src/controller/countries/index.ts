@@ -5,8 +5,8 @@ import { CountriesService } from '../../service/countries';
 @UseInterceptors(CacheInterceptor)
 export class CountriesController {
   constructor(private readonly countriesService: CountriesService) {}
-  @CacheTTL(86400)
 
+  @CacheTTL(86400)
   @Get()
   async getList() {
     const countries = await this.countriesService.list();

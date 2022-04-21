@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Component } from "react";
 import Session from "supertokens-auth-react/recipe/session";
-import { getApiDomain } from "../../App";
+import { getApiDomain, getApiVersion } from "../../App";
 import {
 	Formik,
 	Form,
@@ -41,7 +41,7 @@ export default class Profile extends Component<IProps, IState> {
 
 	async componentDidMount() {
     try {
-      let res = await axios.get(getApiDomain() + "/languages");
+      let res = await axios.get(getApiDomain() + getApiVersion() + "/languages");
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
@@ -68,7 +68,7 @@ export default class Profile extends Component<IProps, IState> {
 					validationSchema={ValidatorSchema}
 					onSubmit={async (values, actions) => {
 						console.log({ values, actions });
-						let res = await axios.patch(getApiDomain() + "/person", values);
+						let res = await axios.patch(getApiDomain() + getApiVersion() + "/person", values);
 						/** if (res.statusText !== "OK") {
 							throw Error(res.statusText);
 						} */

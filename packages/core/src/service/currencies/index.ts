@@ -8,7 +8,7 @@ export class CurrenciesService {
 
   list(): Promise<Currency[]> {
     return this.neo4jService
-      .read(`MATCH (c:Currency) RETURN c`)
+      .read(`MATCH (c:Currency { active: true }) RETURN c`)
       .then((res) => res.records.map((row) => new Currency(row.get('c'))));
   }
 }

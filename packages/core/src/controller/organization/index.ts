@@ -17,6 +17,10 @@ import { UpdateOrganizationDto } from '../../dto/organization/update';
 import { AuthGuard } from '../../guard/auth';
 import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
+import { Role } from '../../enum/role';
+import { Roles } from '../../decorator/role';
+import { RolesGuard } from '../../guard/role';
+
 
 @Controller('organization')
 @UseInterceptors(CacheInterceptor)
@@ -57,13 +61,11 @@ export class OrganizationController {
 
   @Patch()
   @UseGuards(AuthGuard)
+	@Roles(Role.MANAGE_ORGANIZATION)
+	@UseGuards(RolesGuard)
   async patchOrganization(
-    @Session() session: SessionContainer,
     @Body() properties: UpdateOrganizationDto,
   ) {
-    const userId = session.getUserId();
-		const roles = await this.organizationService.getOrganizationRoles(userId, properties.organizationId);
-		if (roles.includes('MANAGE_ORGANIZATION')) {
 			const organizations = await this.organizationService.update(properties);
 			if (Array.isArray(organizations)) {
 				return {
@@ -71,13 +73,13 @@ export class OrganizationController {
 				};
 			}
 			throw new HttpException('Organization couldn\'t be updated', HttpStatus.NOT_MODIFIED);
-		}
 
-		throw new HttpException('You need to have the MANAGE_ORGANIZATION role', HttpStatus.FORBIDDEN);
   }
 
   @Delete()
   @UseGuards(AuthGuard)
+	@Roles(Role.MANAGE_ORGANIZATION)
+	@UseGuards(RolesGuard)
   async deleteOrganization(@Session() session: SessionContainer) {
     const userId = session.getUserId();
     return this.organizationService.delete(userId);

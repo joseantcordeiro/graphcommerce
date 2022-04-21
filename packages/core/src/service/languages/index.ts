@@ -8,7 +8,7 @@ export class LanguagesService {
 
   list(): Promise<Language[]> {
     return this.neo4jService
-      .read(`MATCH (l:Language) RETURN l`)
+      .read(`MATCH (l:Language { active: true }) RETURN l`)
       .then((res) => res.records.map((row) => new Language(row.get('l'))));
   }
 }

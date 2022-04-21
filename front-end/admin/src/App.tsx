@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, BrowserRouter as Router, Route } from "react-router-dom";
 import SuperTokens, { getSuperTokensRoutesForReactRouterDom } from "supertokens-auth-react";
 import EmailPassword from "supertokens-auth-react/recipe/emailpassword";
@@ -12,8 +12,6 @@ import axios from "axios";
 import Nav from "./c/nav";
 import Onboarding from "./c/onboarding/Onboarding";
 import CreateOrganization from "./c/orgs/create";
-import { createGlobalstate, useGlobalStateReducer } from "state-pool";
-import { CurrentUser } from "./i/state-pool/CurrentUserType";
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 8000;
@@ -25,6 +23,12 @@ export function getWebsiteDomain() {
     const websitePort = process.env.REACT_APP_WEBSITE_PORT || 3000;
     const websiteUrl = process.env.REACT_APP_WEBSITE_URL || `http://localhost:${websitePort}`;
     return websiteUrl;
+}
+
+export function getApiVersion() {
+	const apiVersion = process.env.REACT_APP_API_VERSION || 'v1';
+	const apiPath = process.env.REACT_APP_API_PATH || `/api/${apiVersion}`;
+	return apiPath;
 }
 
 SuperTokens.init({
@@ -85,35 +89,37 @@ SuperTokens.init({
 
 Session.addAxiosInterceptors(axios);
 
-const initialGlobalState = { userId: "", name: "", email: "", picture: "", defaultOrganizationId: ""};
-Session.addAxiosInterceptors(axios);
-
-const loadUserData = async ()  => {
-
-  try {
-    const response = await axios.get(getApiDomain() + "/person");
-		if (response.statusText !== "OK") {
-			throw Error(response.statusText);
-		}
-		return( {
-			id: response.data.persons[0].id,
-			name: response.data.persons[0].name,
-			email: response.data.persons[0].email,
-			picture: response.data.persons[0].picture,
-			defaultOrganizationId: response.data.persons[0].defaultOrganizationId
-		});
-  } catch (err) {
-    console.log(err);
-  }
-	return(initialGlobalState);
-};
-
-const currentUser = createGlobalstate<CurrentUser>(initialGlobalState);
+const initialGlobalState = { userId: "", name: "", email: "", picture: "", defaultOrganizationId: "", defaultOrganizationName: ""};
 
 function App() {
   let [showSessionExpiredPopup, updateShowSessionExpiredPopup] = useState(false);
 	let { userId, doesSessionExist } = useSessionContext();
-	let [user, dispatch] = useGlobalStateReducer<CurrentUser>(loadUserData, currentUser);
+	let [ user, updateUser ] = useState(initialGlobalState);
+
+		async function loadUserData() {
+		try {
+			const response = await axios.get(getApiDomain() + getApiVersion() + "/person");
+			if (response.statusText !== "OK") {
+				throw Error(response.statusText);
+			}
+			updateUser( { 
+				userId: response.data.persons[0].id,
+				name: response.data.persons[0].name,
+				email: response.data.persons[0].email,
+				picture: response.data.persons[0].picture,
+				defaultOrganizationId: response.data.defaultOrganization[0].id,
+				defaultOrganizationName: response.data.defaultOrganization[0].name,
+			} );
+		} catch (err) {
+			console.log(err);
+		}
+		return(initialGlobalState);
+		}
+
+
+	useEffect(() => {
+		loadUserData();
+	}, []);
 
   return (
     <div className="App">

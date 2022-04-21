@@ -40,6 +40,7 @@ return (
 			<span className="icon">
 					<i className="fa fa-home"></i>
 				</span>
+			<span>{props.currentUser.defaultOrganizationName}</span>
 			</a>
 			<OrgDropDown id={props.currentUser.defaultOrganizationId}/>
 			<a className="navbar-item" href="/dashboard">

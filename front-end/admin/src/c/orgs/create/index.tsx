@@ -53,7 +53,7 @@ export default class CreateOrganization extends Component<IProps, IState> {
 
 	async componentDidMount() {
     try {
-      let res = await axios.get(getApiDomain() + "/languages");
+      let res = await axios.get(getApiDomain() + "/api/v1/languages");
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
@@ -62,7 +62,7 @@ export default class CreateOrganization extends Component<IProps, IState> {
       console.log(error);
     }
 		try {
-      let res = await axios.get(getApiDomain() + "/countries");
+      let res = await axios.get(getApiDomain() + "/api/v1/countries");
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
@@ -71,7 +71,7 @@ export default class CreateOrganization extends Component<IProps, IState> {
       console.log(error);
     }
 		try {
-      let res = await axios.get(getApiDomain() + "/currencies");
+      let res = await axios.get(getApiDomain() + "/api/v1/currencies");
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
@@ -94,7 +94,7 @@ export default class CreateOrganization extends Component<IProps, IState> {
 					validationSchema={ValidatorSchema}
 					onSubmit={async (values, actions) => {
 						console.log({ values, actions });
-						let res = await axios.post(getApiDomain() + "/organization", values);
+						let res = await axios.post(getApiDomain() + "/api/v1/organization", values);
 						/** if (res.statusText !== "OK") {
 							throw Error(res.statusText);
 						} */

@@ -11,8 +11,6 @@ import { SupertokensService } from '../../service/supertokens';
 import { AuthService } from '../../service/auth';
 import { AuthController } from '../../controller/auth';
 import { ConfigService } from '@nestjs/config';
-import { PersonService } from '../../service/person';
-import { PersonModule } from '../person';
 import { BullModule } from '@nestjs/bull';
 
 @Module({

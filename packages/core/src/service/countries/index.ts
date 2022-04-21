@@ -8,7 +8,7 @@ export class CountriesService {
 
   list(): Promise<Country[]> {
     return this.neo4jService
-      .read(`MATCH (c:Country) RETURN c`)
+      .read(`MATCH (c:Country { active: true }) RETURN c`)
       .then((res) => res.records.map((row) => new Country(row.get('c'))));
   }
 }

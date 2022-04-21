@@ -20,13 +20,13 @@ export class OrganizationService {
 			return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
   }
 
-	async getOrganizationRoles(userId: string, organizationId: string): Promise<string[]> {
+	async getOrganizationRoles(userId: string): Promise<string[]> {
 		const res = await this.neo4jService.read(
 			`
-					MATCH (p:Person { id: $userId })-[r:WORKS_AT]->(o:Organization { id: $organizationId })
+					MATCH (p:Person { id: $userId })-[r:WORKS_AT { default: true }]->(o:Organization)
 					RETURN r.role
 				`,
-			{ userId, organizationId },
+			{ userId },
 		);
 		return res.records.length ? res.records[0].get('r.role') : [];
 	}

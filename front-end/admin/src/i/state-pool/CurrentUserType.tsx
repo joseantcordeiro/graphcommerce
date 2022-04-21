@@ -4,4 +4,5 @@ export type CurrentUser = {
 	email: string;
 	picture: string;
 	defaultOrganizationId: string;
+	defaultOrganizationName: string;
 }

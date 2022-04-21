@@ -23,7 +23,7 @@ export default class OrgDropDown extends Component<IProps, IState> {
 
 	async componentDidMount() {
     try {
-      const response = await axios.get(getApiDomain() + "/organization");
+      const response = await axios.get(getApiDomain() + "/api/v1/organization");
 			if (response.statusText !== "OK") {
         throw Error(response.statusText);
       }
