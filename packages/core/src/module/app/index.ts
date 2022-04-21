@@ -22,6 +22,7 @@ import { BullModule } from '@nestjs/bull';
 import { TeamModule } from '../team';
 import { MetadataModule } from '../metadata';
 import { ChannelModule } from '../channel';
+import { RegionModule } from '../region';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { ChannelModule } from '../channel';
 		OrganizationModule,
 		TeamModule,
 		ChannelModule,
+		RegionModule,
 	],
   controllers: [HealthController],
   providers: [DatabaseHealthIndicator],
