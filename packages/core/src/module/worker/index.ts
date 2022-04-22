@@ -70,13 +70,7 @@ import { SearchModule } from '../search';
       }),
       inject: [ConfigService],
     }),
-		SearchModule.forRootAsync({
-			useFactory: async (config: ConfigService) => ({
-				host: config.get('SEARCH_HOST'),
-				apiKey: config.get('SEARCH_KEY'),
-			}),
-			inject: [ConfigService],
-		}),
+		SearchModule.fromEnv(),
 		Neo4jModule.fromEnv(),
 		ProcessorQueueModule,
 	],

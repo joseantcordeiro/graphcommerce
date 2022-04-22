@@ -1,5 +1,5 @@
-import { Provider, Type } from '@nestjs/common';
-import { MeiliSearch, Config } from 'meilisearch';
+import { Provider } from '@nestjs/common';
+import { MeiliSearch } from 'meilisearch';
 import { MEILI_MODULE_OPTIONS } from '../../config/search';
 import {
   MeiliModuleAsyncOptions,

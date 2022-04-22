@@ -8,21 +8,11 @@ import { MEILI_CLIENT, MEILI_MODULE_OPTIONS } from '../../config/search';
 import { createConnectionFactory, createAsyncProviders } from '../../provider/search';
 import { SearchService } from '../../service/search';
 import { ConfigService } from '@nestjs/config';
-import MeiliSearch from 'meilisearch';
 import { MeiliModuleAsyncOptions, MeiliModuleOptions } from '../../interface/search';
 
 @Global()
-@Module({
-	imports: [],
-  providers: [SearchService],
-  exports: [],
-  controllers: [],
-})
+@Module({})
 export class SearchModule {
-
-	createConnectionFactory(options: MeiliModuleOptions) {
-		return new MeiliSearch(options);
-	}
 
   public static forRoot(options: MeiliModuleOptions): DynamicModule {
     const meiliOptions: Provider = {
@@ -64,23 +54,29 @@ export class SearchModule {
   }
 
 	static fromEnv(): DynamicModule {
-		const config = new ConfigService()
 
-		const host = config.get<string>('SEARCH_HOST');
-		const apiKey = config.get<string>('SEARCH_KEY');
-		return {
-			providers: [
-        {
-          useValue: {
-            host,
-            apiKey,
-          },
-          provide: MEILI_CLIENT,
-        },
-      ],
-      exports: [],
-      imports: [],
+		const options: MeiliModuleAsyncOptions = {
+			useFactory: async (config: ConfigService) => ({
+				host: config.get('SEARCH_HOST'),
+				apiKey: config.get('SEARCH_KEY'),
+			}),
+			inject: [ConfigService],
+		};
+
+		const connectionProvider: Provider = {
+      provide: MEILI_CLIENT,
+      useFactory: async (meiliOptions: MeiliModuleOptions) =>
+        createConnectionFactory(meiliOptions),
+      inject: [MEILI_MODULE_OPTIONS],
+    };
+
+    const asyncProviders = createAsyncProviders(options);
+
+    return {
       module: SearchModule,
-		}
+      imports: options.imports || [],
+      providers: [...asyncProviders, connectionProvider, SearchService],
+      exports: [connectionProvider, SearchService],
+    };
 	}
 }
