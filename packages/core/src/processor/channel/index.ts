@@ -2,11 +2,10 @@ import { OnGlobalQueueCompleted, OnQueueActive, Process, Processor } from '@nest
 import { Inject } from '@nestjs/common';
 import { Job } from 'bull';
 import { Document } from 'meilisearch';
+import { Neo4jService } from 'nest-neo4j/dist';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-// import { InjectMeiliSearch } from '../../decorator/search';
 import { SearchService } from '../../service/search';
-// import { MeiliSearch } from 'meilisearch';
 
 /** var sharp = require('sharp');
 var request = require('request').defaults({encoding: null}); */
@@ -14,20 +13,43 @@ var request = require('request').defaults({encoding: null}); */
 @Processor('channel')
 export class ChannelProcessor {
   constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-	private readonly searchService: SearchService) {
+		private readonly neo4jService: Neo4jService,
+		private readonly searchService: SearchService) {
+	}
+
+	getIndex(channelId: string): Promise<string> {
+		return this.neo4jService.read(
+			`
+			MATCH (c:Channel { id: $channelId })<-[:HAS_CHANNEL]-(o:Organization)
+			RETURN o.id
+			`,
+			{ channelId },
+		).then((res) => {
+			if (res.records.length) {
+				return res.records[0].get('o.id');
+			}
+			return 'ERROR';
+		});
+		
 	}
 
 	@Process('update')
   async update(job: Job) {
     const doc: Document = job.data.channel;
-		const index = "channel";
+		let index = await this.getIndex(doc[0].id);
+		if (index === 'ERROR')
+			return;
+		index = "channel-" + index;
 		return this.searchService.updateDocuments(index, [doc[0]]);
   }
 
 	@Process('create')
   async create(job: Job): Promise<any> {
 		const doc: Document = job.data.channel;
-		const index = "channel";
+		let index = await this.getIndex(doc[0].id);
+		if (index === 'ERROR')
+			return;
+		index = "channel-" + index;
 		return this.searchService.addDocuments(index, [doc[0]]);
   }
 
