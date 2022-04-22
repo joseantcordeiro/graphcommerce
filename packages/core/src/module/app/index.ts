@@ -23,6 +23,8 @@ import { TeamModule } from '../team';
 import { MetadataModule } from '../metadata';
 import { ChannelModule } from '../channel';
 import { RegionModule } from '../region';
+import { SearchModule } from '../search';
+import { SearchController } from '../../controller/search';
 
 @Module({
   imports: [
@@ -38,7 +40,7 @@ import { RegionModule } from '../region';
 							winston.format.colorize(),
               winston.format.timestamp(),
 							winston.format.ms(),
-              nestWinstonModuleUtilities.format.nestLike('GraphCommerce', { prettyPrint: true }),
+              nestWinstonModuleUtilities.format.nestLike('API', { prettyPrint: true }),
             ),
           }),
         ],
@@ -68,6 +70,13 @@ import { RegionModule } from '../region';
 			}),
 			inject: [ConfigService],
 		}),
+		SearchModule.forRootAsync({
+			useFactory: async (config: ConfigService) => ({
+				host: config.get('SEARCH_HOST'),
+				apiKey: config.get('SEARCH_KEY'),
+			}),
+			inject: [ConfigService],
+		}),
 		Neo4jModule.fromEnv(),
 		AuthModule.fromEnv(),
 		TerminusModule,
@@ -82,7 +91,7 @@ import { RegionModule } from '../region';
 		ChannelModule,
 		RegionModule,
 	],
-  controllers: [HealthController],
+  controllers: [HealthController, SearchController],
   providers: [DatabaseHealthIndicator],
 })
 export class AppModule implements NestModule {

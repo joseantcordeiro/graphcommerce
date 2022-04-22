@@ -1,25 +1,31 @@
 import { OnGlobalQueueCompleted, OnQueueActive, Process, Processor } from '@nestjs/bull';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bull';
+import { Document } from 'meilisearch';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { SearchService } from '../../service/search';
+import { CreateOrganizationDocumentDto } from '../../dto/organization/document';
 /** var sharp = require('sharp');
 var request = require('request').defaults({encoding: null}); */
 
 @Processor('organization')
 export class OrganizationProcessor {
-  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
+  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+		private readonly searchService: SearchService) {}
 
 	@Process('update')
-  async update(job: Job<unknown>) {
-    this.logger.info(`[OrganizationProcessor] Job ${job.id}-update process. Data:`, job.data);
-    return {};
+  async update(job: Job) {
+    const doc: Document = job.data.organization;
+		const index = "organization";
+		return this.searchService.updateDocuments(index, [doc[0]]);
   }
 
 	@Process('create')
-  async create(job: Job<unknown>) {
-    this.logger.info(`[OrganizationProcessor] Job ${job.id}-create process. Data:`, job.data);
-    return {};
+  async create(job: Job) {
+		const doc: Document = job.data.organization;
+		const index = "organization";
+		return this.searchService.addDocuments(index, [doc[0]]);
   }
 
 	@Process('delete')
@@ -32,7 +38,6 @@ export class OrganizationProcessor {
 	onActive(job: Job) {
 		this.logger.info(`[OrganizationProcessor] Job ${job.id}-${job.name} started. Data:`, job.data);
 	}
-
 	
 	@OnGlobalQueueCompleted()
 	async onGlobalCompleted(jobId: number, result: any) {

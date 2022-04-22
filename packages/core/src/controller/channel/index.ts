@@ -74,7 +74,7 @@ export class ChannelController {
     );
 		if (Array.isArray(channels)) {
 			this.channelQueue.add('create', {
-				userId: userId, channel: channels,
+				channel: channels.map(m => m.toJson()),
 			});
 			return {
 				channels: channels.map(m => m.toJson()),
@@ -95,7 +95,7 @@ export class ChannelController {
 		const channels = await this.channelService.update(properties);
 		if (Array.isArray(channels)) {
 			this.channelQueue.add('update', {
-				userId: userId, channel: channels,
+				channel: channels.map(m => m.toJson()),
 			});
 			return {
 				channels: channels.map(m => m.toJson()),

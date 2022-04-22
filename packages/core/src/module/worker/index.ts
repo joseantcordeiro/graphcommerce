@@ -10,6 +10,7 @@ import { BullModule } from '@nestjs/bull';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ProcessorQueueModule } from '../processor';
+import { SearchModule } from '../search';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { ProcessorQueueModule } from '../processor';
 							winston.format.colorize(),
               winston.format.timestamp(),
 							winston.format.ms(),
-              nestWinstonModuleUtilities.format.nestLike('GraphCommerceWorker', { prettyPrint: true }),
+              nestWinstonModuleUtilities.format.nestLike('WORKER', { prettyPrint: true }),
             ),
           }),
         ],
@@ -43,7 +44,6 @@ import { ProcessorQueueModule } from '../processor';
 			inject: [ConfigService],
 		}),
 		MailerModule.forRootAsync({
-      // imports: [ConfigModule], // import module if not enabled globally
       useFactory: async (config: ConfigService) => ({
         // transport: config.get("MAIL_TRANSPORT"),
         // or
@@ -70,6 +70,13 @@ import { ProcessorQueueModule } from '../processor';
       }),
       inject: [ConfigService],
     }),
+		SearchModule.forRootAsync({
+			useFactory: async (config: ConfigService) => ({
+				host: config.get('SEARCH_HOST'),
+				apiKey: config.get('SEARCH_KEY'),
+			}),
+			inject: [ConfigService],
+		}),
 		Neo4jModule.fromEnv(),
 		ProcessorQueueModule,
 	],

@@ -6,7 +6,6 @@ import { Roles } from '../../decorator/role';
 import { RolesGuard } from '../../guard/role';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';import { AuthGuard } from '../../guard/auth';
-;
 
 @Controller('region')
 export class RegionController {
