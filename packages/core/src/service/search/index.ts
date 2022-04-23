@@ -41,8 +41,32 @@ export class SearchService {
     return this.meiliSearchClient.index(index).updateDocuments(documents);
   }
 
-  async deleteDocument(index: string, docId: string): Promise<EnqueuedTask> {
+  async deleteDocument(index: string, docId: string | number): Promise<EnqueuedTask> {
     return this.meiliSearchClient.index(index).deleteDocument(docId);
   }
+
+	async getTasks(): Promise<any> {
+		return this.meiliSearchClient.getTasks();
+	}
 	
+	async getTask(taskId: number): Promise<any> {
+		return this.meiliSearchClient.getTask(taskId);
+	}
+
+	async getIndexTasks(indexId: string): Promise<any> {
+		return this.meiliSearchClient.index(indexId).getTasks();
+	}
+
+	async getIndexTask(indexId: string, taskId: number): Promise<any> {
+		return this.meiliSearchClient.index(indexId).getTask(taskId);
+	}
+
+	async deleteIndex(indexId: string): Promise<EnqueuedTask> {
+		return this.meiliSearchClient.deleteIndex(indexId);
+	}
+
+	async searchDocuments(indexId: string, query: string): Promise<any> {
+		return this.meiliSearchClient.index(indexId).search(query);
+	}
+
 }

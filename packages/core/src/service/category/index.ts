@@ -2,39 +2,43 @@ import { Injectable } from '@nestjs/common';
 import { Neo4jService } from 'nest-neo4j/dist';
 import { Category } from '../../entity/category';
 import { CreateCategoryDto } from '../../dto/category/create';
+import { UpdateCategoryDto } from '../../dto/category/update';
 
 @Injectable()
 export class CategoryService {
   constructor(private readonly neo4jService: Neo4jService) {}
-/** 
-  async createCategory(userId: string, properties: CreateCategoryDto): Promise<Category[] | any> {
+
+  async createCategory(properties: CreateCategoryDto): Promise<Category[] | any> {
 		const res = await this.neo4jService.write(
-			`CREATE (c:Category { id: randomUUID(), name: $properties.name, description> $properties.description, seoTitle: $properties.seoTitle, seoDescription: $properties.seoDescription, seoKeywords: $properties.seoKeywords })
-			 WITH c
-			 CREATE (m:Metadata { key: $properties.key, value: $properties.value, private: $properties.private })
-			 CREATE (n)-[:HAS_METADATA { addedBy: $userId, createdAt: datetime() }]->(m) 
-			 RETURN m
+			`MATCH (o:Organization { id: $properties.organizationId })
+			 WITH o
+			 CREATE (c:Category { id: randomUUID(), name: $properties.name, description: $properties.description, seoTitle: $properties.seoTitle, seoDescription: $properties.seoDescription, seoKeywords: $properties.seoKeywords })
+			 CREATE (o)-[:HAS_CATEGORY { createdAt: datetime() }]->(c)
+			 RETURN c
 			`,
-			{	userId, properties },
+			{	properties },
 		);
-		return res.records.length ? res.records.map((row) => new Metadata(row.get('m'))) : {};
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : false;
 
   }
 
-	async deleteCategory(properties: DeleteCategoryDto): Promise<any> {
+	async deleteCategory(categoryId: string): Promise<any> {
 		await this.neo4jService.write(
-			`MATCH (c:Category { id: '${properties.id}' })
+			`MATCH (c:Category { id: $categoryId })
 			 DETACH DELETE c
 			`,
-			{	properties },
+			{	categoryId },
 		);
 		return {};
 	}
 
 	async updateCategory(properties: UpdateCategoryDto): Promise<Category[] | any> {
 		const res = await this.neo4jService.write(
-				`MATCH (c:Category { id: '${properties.id}' })
-				 SET c.name = $properties.name, description = $properties.description, c.seoTitle = $properties.seoTitle, c.seoDescription = $properties.seoDescription, c.seoKeywords = $properties.seoKeywords
+				`MATCH (c:Category { id: $properties.categoryId })
+				 SET c.name = $properties.name, c.description = $properties.description, c.seoTitle = $properties.seoTitle, c.seoDescription = $properties.seoDescription, c.seoKeywords = $properties.seoKeywords
+				 WITH c
+				 MATCH (o:Organization)-[r:HAS_CATEGORY]->(c)
+				 SET r.updatedAt = datetime()
 				 RETURN c
 				`,
 				{	properties },
@@ -42,14 +46,24 @@ export class CategoryService {
 		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : {};
 	}
 
-	async getCategory(properties: GetCategoryDto): Promise<Category[] | any> {
+	async getCategory(categoryId: string): Promise<Category[] | any> {
 		const res = await this.neo4jService.read(
-				`MATCH (n { id: $properties.objectId })-[r:HAS_METADATA]->(m:Metadata { key: $properties.key })
-				 RETURN m
+				`MATCH (c:Category { id: $categoryId })
+				 RETURN c
 				`,
-				{	properties },
+				{	categoryId },
 		);
-		return res.records.length ? res.records.map((row) => new Category(row.get('m'))) : {};
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : {};
 	}
-*/
+
+	async getCategories(organizationId: string): Promise<Category[] | any> {
+		const res = await this.neo4jService.read(
+				`MATCH (o:Organization { id: $organizationId })-[:HAS_CATEGORY]->(c:Category)
+				 RETURN c
+				`,
+				{	organizationId },
+		);
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : {};
+	}
+
 }

@@ -5,9 +5,6 @@ import { Document } from 'meilisearch';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SearchService } from '../../service/search';
-import { CreateOrganizationDocumentDto } from '../../dto/organization/document';
-/** var sharp = require('sharp');
-var request = require('request').defaults({encoding: null}); */
 
 @Processor('organization')
 export class OrganizationProcessor {

@@ -25,6 +25,7 @@ import { ChannelModule } from '../channel';
 import { RegionModule } from '../region';
 import { SearchModule } from '../search';
 import { SearchController } from '../../controller/search';
+import { CategoryModule } from '../category';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { SearchController } from '../../controller/search';
 		TeamModule,
 		ChannelModule,
 		RegionModule,
+		CategoryModule,
 	],
   controllers: [HealthController, SearchController],
   providers: [DatabaseHealthIndicator],

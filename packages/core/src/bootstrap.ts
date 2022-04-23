@@ -1,8 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import supertokens from 'supertokens-node';
-import { AppModule } from './module/app';
-import { WorkerModule } from './module/worker'
-import { SwaggerAppModule } from './module/swagger';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Neo4jErrorFilter } from 'nest-neo4j/dist';
 import { UnprocessibleEntityValidationPipe } from './pipes/unprocessible-entity-validation.pipe';
@@ -14,7 +11,10 @@ import { RequestMethod, VersioningType } from '@nestjs/common';
 
 export async function bootstrap() {
 
-  const app = await NestFactory.create(AppModule);
+	const app = await import('./module/app').then(({ AppModule }) => {
+		return NestFactory.create(AppModule);
+	});
+	
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 	
 	const configService = app.get(ConfigService);
@@ -49,7 +49,10 @@ export async function bootstrap() {
 
 export async function bootstrapWorker() {
 
-  const app = await NestFactory.create(WorkerModule);
+	const app = await import('./module/worker').then(({ WorkerModule }) => {
+		return NestFactory.create(WorkerModule);
+	});
+
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
 	/** for development or debugging */
@@ -64,7 +67,10 @@ export async function bootstrapWorker() {
 
 export async function bootstrapSwagger() {
 
-  const app = await NestFactory.create(SwaggerAppModule);
+	const app = await import('./module/swagger').then(({ SwaggerAppModule }) => {
+		return NestFactory.create(SwaggerAppModule);
+	});
+
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
 	/** for development or debugging */

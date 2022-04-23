@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateCategoryDto {
+export class UpdateCategoryDto {
 
 	@ApiProperty({
 		required: true,
-		description: 'The uuid of the organization',
+		description: 'The uuid of the category',
 		example: '12345678-1234-1234-1234-1234567890ab',
 	})
-	organizationId: string;
+	categoryId: string;
 
 	@ApiProperty({
 		required: true,
@@ -42,7 +42,7 @@ export class CreateCategoryDto {
 		description: 'SEO keywords',
 		example: 'Special Products',
 	})
-	seoKeywords: string[];
+	seoKeywords: string;
 
 	@ApiProperty({
 		required: false,

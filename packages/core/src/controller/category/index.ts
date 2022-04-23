@@ -1,40 +1,43 @@
-import { Body, CacheInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Patch, Post, Session, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, CacheInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CreateCategoryDto } from '../../dto/category/create';
-
 import { CategoryService } from '../../service/category';
 import { AuthGuard } from '../../guard/auth';
-import { SessionContainer } from 'supertokens-node/recipe/session';
+import { UpdateCategoryDto } from '../../dto/category/update';
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 
 @Controller('category')
 @UseInterceptors(CacheInterceptor)
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
-/**
+  constructor(@InjectQueue('category') private readonly categoryQueue: Queue,
+		private readonly categoryService: CategoryService) {}
+
   @Post()
 	@UseGuards(AuthGuard)
   async postCategory(
-		@Session() session: SessionContainer,
     @Body() properties: CreateCategoryDto,
   ) {
-    const category = await this.categoryService.createCategory(userId, properties);
+    const category = await this.categoryService.createCategory(properties);
 		if (Array.isArray(category)) {
+			this.categoryQueue.add('create', {
+				category: category.map(m => m.toJson()),
+			});
 			return {
-				objectId: properties.objectId,
 				category: category.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Category couldn\'t be added', HttpStatus.NOT_MODIFIED);
   }
 
-  @Delete()
+  @Delete(':categoryId')
 	@UseGuards(AuthGuard)
   async deleteMetadata(
-    @Body() properties: DeleteCategoryDto,
+    @Param() categoryId: string,
   ) {
-    await this.categoryService.deleteCategory(properties);
+    await this.categoryService.deleteCategory(categoryId);
+		this.categoryQueue.add('delete', { categoryId: categoryId });
 		return {
-			objectId: properties.objectId,
-			key: properties.key,
+			objectId: categoryId,
 			message: 'Category deleted',
 		}
   }
@@ -45,27 +48,42 @@ export class CategoryController {
 	) {
 		const category = await this.categoryService.updateCategory(properties);
 		if (Array.isArray(category)) {
+			this.categoryQueue.add('update', {
+				category: category.map(m => m.toJson()),
+			});
 			return {
-				objectId: properties.objectId,
 				category: category.map(m => m.toJson()),
 			};
 		}
-		throw new HttpException('Metadata couldn\'t be updated', HttpStatus.NOT_MODIFIED);
+		throw new HttpException('Category couldn\'t be updated', HttpStatus.NOT_MODIFIED);
 	}
 
-  @Get()
+  @Get(':categoryId')
 	@UseGuards(AuthGuard)
   async getMetadata(
-    @Body() properties: GetCategoryDto,
+    @Param() categoryId: string,
   ) {
-    const category = await this.categoryService.getCategory(properties);
+    const category = await this.categoryService.getCategory(categoryId);
 		if (Array.isArray(category)) {
 			return {
-				objectId: properties.objectId,
 				category: category.map(m => m.toJson()),
 			};
 		}
-		throw new HttpException('Category couldn\'t be found', HttpStatus.NOT_FOUND);
+		throw new HttpException('CategoryId ${categoryId} couldn\'t be found', HttpStatus.NOT_FOUND);
   }
- */
+
+	@Get('organization/:organizationId')
+	@UseGuards(AuthGuard)
+	async getOrganizationCategories(
+		@Param() organizationId: string,
+	) {
+		const categories = await this.categoryService.getCategories(organizationId);
+		if (Array.isArray(categories)) {
+			return {
+				categories: categories.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Categories couldn\'t be found', HttpStatus.NOT_FOUND);
+	}
+
 }

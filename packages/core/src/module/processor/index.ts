@@ -7,6 +7,7 @@ import { PictureProcessor } from '../../processor/picture';
 import { TeamProcessor } from '../../processor/team';
 import { OrganizationProcessor } from '../../processor/organization';
 import { RegionProcessor } from '../../processor/region';
+import { CategoryProcessor } from '../../processor/category';
 
 @Module({
   imports: [
@@ -31,6 +32,9 @@ import { RegionProcessor } from '../../processor/region';
 		BullModule.registerQueue({
       name: 'region',
     }),
+		BullModule.registerQueue({
+      name: 'category',
+    }),
   ],
   controllers: [],
   providers: [PersonProcessor,
@@ -40,6 +44,7 @@ import { RegionProcessor } from '../../processor/region';
 		OrganizationProcessor,
 		TeamProcessor,
 		RegionProcessor,
+		CategoryProcessor,
 	],
 })
 export class ProcessorQueueModule {}
