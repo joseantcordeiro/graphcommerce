@@ -43,7 +43,7 @@ export class CategoryService {
 				`,
 				{	properties },
 		);
-		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : {};
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : false;
 	}
 
 	async getCategory(categoryId: string): Promise<Category[] | any> {
@@ -53,7 +53,7 @@ export class CategoryService {
 				`,
 				{	categoryId },
 		);
-		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : {};
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : false;
 	}
 
 	async getCategories(organizationId: string): Promise<Category[] | any> {
@@ -63,7 +63,7 @@ export class CategoryService {
 				`,
 				{	organizationId },
 		);
-		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : {};
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : false;
 	}
 
 }

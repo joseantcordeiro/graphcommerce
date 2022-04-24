@@ -8,6 +8,7 @@ import { TeamProcessor } from '../../processor/team';
 import { OrganizationProcessor } from '../../processor/organization';
 import { RegionProcessor } from '../../processor/region';
 import { CategoryProcessor } from '../../processor/category';
+import { ChannelService } from '../../service/channel';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { CategoryProcessor } from '../../processor/category';
 		TeamProcessor,
 		RegionProcessor,
 		CategoryProcessor,
+		ChannelService
 	],
 })
 export class ProcessorQueueModule {}

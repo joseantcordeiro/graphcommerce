@@ -50,8 +50,8 @@ export class PersonService {
   async find(properties: FindPersonDto): Promise<Person[] | boolean> {
     const res = await this.neo4jService.read(
       `
-            MATCH (p:Person {email: $properties.email})-[:WORKS_IN]->(o:Organization {id: $properties.organizationId})
-            RETURN p
+      MATCH (p:Person {email: $properties.email})-[:WORKS_IN]->(o:Organization {id: $properties.organizationId})
+      RETURN p
         `,
       { properties },
     );
@@ -62,7 +62,9 @@ export class PersonService {
 	async organization(userId: string): Promise<Organization[] | any> {
 		const res = await this.neo4jService.read(
 			`
-			MATCH (p:Person { id: $userId })-[r:WORKS_AT { default: true }]->(o:Organization)
+			MATCH (p:Person { id: $userId })-[:HAS_METADATA]->(m:Metadata { key: 'DEFAULT_ORGANIZATION' })
+			WITH m
+			MATCH (o:Organization { id: m.value })
 			RETURN o
 			`,
 		 { userId },
@@ -74,16 +76,15 @@ export class PersonService {
 	async makeDefaultOrganization(userId: string, organizationId: string): Promise<Organization[] | any> {
 		const res = await this.neo4jService.write(
 			`
-			MATCH (p:Person { id: $userId })-[r0:WORKS_AT { default: true }]->(o0:Organization)
-			SET r0.default = false
-			WITH p
-			MATCH (p)-[r1:WORKS_AT]->(o1:Organization { id: $organizationId })
-			SET r1.default = true
-			RETURN o1
+			MATCH (p:Person { id: $userId })-[HAS_METADATA]->(m:Metadata { key: 'DEFAULT_ORGANIZATION' })
+			SET m.value = $organizationId
+			WITH p, m
+			MATCH (o:Organization { id: m.value })
+			RETURN o
 			`,
 			{ userId, organizationId },
 		);
-		return res.records.length ? res.records.map((row) => new Organization(row.get('o1'))) : false;
+		return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
 	}
 
 	async create(properties: CreatePersonDto): Promise<Person[] | any> {
@@ -92,9 +93,10 @@ export class PersonService {
         `
 						MATCH (l:Language { alpha_2: $properties.defaultLanguage })
 						WITH l
-            CREATE (p:Person { id: $properties.userId })
-            SET p.name = $properties.name, p.email = $properties.email
+            CREATE (p:Person { id: $properties.userId, p.name = $properties.name, p.email = $properties.email })
 						CREATE (p)-[:HAS_DEFAULT_LANGUAGE]->(l)
+						CREATE (m:Metadata { key: 'DEFAULT_ORGANIZATION', value: '' })
+						CREATE (p)-[:HAS_METADATA]->(m:Metadata)
             RETURN p
         `,
         {
@@ -169,8 +171,8 @@ export class PersonService {
     });
 
 		return {
-			profile_picture: res.records[0].get('profile_picture'),
-			message: "Profile picture updated successfully."
+			message: "Profile picture updated successfully.",
+			profile_picture: res.records[0].get('profile_picture')
 		};
 	}
 }

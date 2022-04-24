@@ -4,7 +4,6 @@ import { ChannelController } from '../../controller/channel';
 import { MinioClientModule } from '../minio-client';
 import { BullModule } from '@nestjs/bull';
 
-@Global()
 @Module({
 	imports: [
 		MinioClientModule,
@@ -14,6 +13,6 @@ import { BullModule } from '@nestjs/bull';
 	],
   providers: [ChannelService],
   controllers: [ChannelController],
-	exports: [],
+	exports: [ChannelService],
 })
 export class ChannelModule {}

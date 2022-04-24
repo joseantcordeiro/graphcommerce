@@ -61,7 +61,7 @@ export class CategoryProcessor {
 		const doc = await this.searchService.searchDocuments(index, categoryId);
 		return  {
 			message: 'Category not deleted',
-			doc: doc[0]
+			doc: doc.hits[0]
 		}
 		// return this.searchService.deleteDocument(index, doc.hits[0].id);
 	}

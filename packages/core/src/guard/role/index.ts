@@ -40,7 +40,9 @@ export class RolesGuard implements CanActivate {
 	async roles(userId): Promise<string[]> {
 		const res = await this.neo4jService.read(
 			`
-			MATCH (p:Person { id: $userId })-[r:WORKS_AT { default: true }]->(o:Organization)
+			MATCH (p:Person { id: $userId })-[:HAS_METADATA]->(m:Metadata { key: 'DEFAULT_ORGANIZATION' })
+			WITH p, m
+			MATCH (p)-[r:WORKS_IN]->(o:Organization { id: m.value })
 			RETURN r.role
 			`,
 			{ userId },

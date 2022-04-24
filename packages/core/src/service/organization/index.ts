@@ -12,7 +12,7 @@ export class OrganizationService {
     const res = await this.neo4jService
       .read(
         `
-			  MATCH (p:Person { id: $userId })-[:WORKS_AT]->(o:Organization)
+			  MATCH (p:Person { id: $userId })-[:WORKS_IN]->(o:Organization)
 			  RETURN o
 			  `,
         { userId },
@@ -20,13 +20,13 @@ export class OrganizationService {
 			return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
   }
 
-	async getOrganizationRoles(userId: string): Promise<string[]> {
+	async getOrganizationRoles(userId: string, organizationId: string): Promise<string[]> {
 		const res = await this.neo4jService.read(
 			`
-					MATCH (p:Person { id: $userId })-[r:WORKS_AT { default: true }]->(o:Organization)
+					MATCH (p:Person { id: $userId })-[r:WORKS_IN { default: true }]->(o:Organization { id: $organizationId })
 					RETURN r.role
 				`,
-			{ userId },
+			{ userId, organizationId },
 		);
 		return res.records.length ? res.records[0].get('r.role') : [];
 	}
@@ -39,13 +39,19 @@ export class OrganizationService {
       `
 			MATCH (p:Person {id: $userId}), (a:Currency { code: $properties.defaultCurrency }), (c:Country { iso_2: $properties.defaultCountry }), (l:Language { alpha_2: $properties.defaultLanguage })
 			WITH p, a, c, l, randomUUID() AS uuid
-			CREATE (o:Organization { id: uuid })
-			SET o.name = $properties.name
-			CREATE (p)-[:OWNS { createdAt: datetime() }]->(o)
-			CREATE (p)-[:WORKS_AT { role: ['MANAGE_ORGANIZATION'], default: false, since: datetime() }]->(o)
+			CREATE (o:Organization { id: uuid, name: $properties.name})
+			CREATE (p)-[:OWNS { createdAt: datetime(), deleted: false}]->(o)
+			CREATE (p)-[:WORKS_IN { role: ['MANAGE_ORGANIZATION'], since: datetime() }]->(o)
 			CREATE (o)-[:HAS_DEFAULT_COUNTRY]->(c)
 			CREATE (o)-[:HAS_DEFAULT_CURRENCY]->(a)
 			CREATE (o)-[:HAS_DEFAULT_LANGUAGE]->(l)
+			CREATE (m:Channel { id: randomUUID(), name: 'default-channel' })
+			CREATE (o)-[:HAS_CHANNEL { createdBy: $userId, createdAt: datetime(), active: true, deleted: false }]->(m)
+			CREATE (m)-[:HAS_DEFAULT_COUNTRY]->(c)
+			CREATE (m)-[:HAS_DEFAULT_CURRENCY]->(a)
+			WITH o, p
+			MATCH (p)-[:HAS_METADATA]->(d:Metadata { key: 'DEFAULT_ORGANIZATION' })
+			SET d.value = o.id
 			RETURN o
 	  `,
       {
@@ -77,15 +83,17 @@ export class OrganizationService {
     return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
   }
 
-  async delete(userId: string): Promise<any> {
-    return this.neo4jService.write(
+  async delete(userId: string, organizationId: string): Promise<any> {
+    const res = await this.neo4jService.write(
       `
-			MATCH (p:Person {id: $userId})-[r:OWNS]->(o:Organization)
-			DETACH DELETE o
+			MATCH (p:Person {id: $userId})-[r:OWNS]->(o:Organization {id: $organizationId})
+			SET r.deleted = true
+			RETURN o
 			`,
       {
-        userId,
+        userId, organizationId
       },
     );
+		return res.records.length ? res.records.map((row) => new Organization(row.get('o'))) : false;
   }
 }

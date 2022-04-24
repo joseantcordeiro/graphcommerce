@@ -4,6 +4,13 @@ export class CreateChannelDto {
 
 	@ApiProperty({
 		required: true,
+		description: 'Organization uuid',
+		example: '5e9f8f8f-f8f8-f8f8-f8f8-f8f8f8f8f8f8',
+	})
+	organizationId: string;
+
+	@ApiProperty({
+		required: true,
 		description: 'The name of the category',
 		example: 'Special Products',
 	})

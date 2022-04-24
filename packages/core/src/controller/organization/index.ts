@@ -10,6 +10,7 @@ import {
 	HttpStatus,
 	UseInterceptors,
 	CacheInterceptor,
+	Param,
 } from '@nestjs/common';
 import { OrganizationService } from '../../service/organization';
 import { CreateOrganizationDto } from '../../dto/organization/create';
@@ -56,9 +57,9 @@ export class OrganizationController {
       properties,
     );
 		if (Array.isArray(organizations)) {
-			this.organizationQueue.add('create', {
+			/** this.organizationQueue.add('create', {
 				organization: organizations.map(m => m.toJson()),
-			});
+			}); */
 			return {
 				organizations: organizations.map(m => m.toJson()),
 			};
@@ -75,9 +76,9 @@ export class OrganizationController {
   ) {
 			const organizations = await this.organizationService.update(properties);
 			if (Array.isArray(organizations)) {
-				this.organizationQueue.add('update', {
+				/** this.organizationQueue.add('update', {
 					organization: organizations.map(m => m.toJson()),
-				});
+				}); */
 				return {
 					organizations: organizations.map(m => m.toJson()),
 				};
@@ -86,15 +87,23 @@ export class OrganizationController {
 
   }
 
-  @Delete()
+  @Delete(':organizationId')
   @UseGuards(AuthGuard)
 	@Roles(Role.MANAGE_ORGANIZATION)
 	@UseGuards(RolesGuard)
-  async deleteOrganization(@Session() session: SessionContainer) {
+  async deleteOrganization(@Param('organizationId') organizationId: string,
+		@Session() session: SessionContainer) {
     const userId = session.getUserId();
-		this.organizationQueue.add('delete', {
-			userId: userId,
-		});
-    return this.organizationService.delete(userId);
+		const organizations = await this.organizationService.delete(userId, organizationId);
+		if (Array.isArray(organizations)) {
+			this.organizationQueue.add('delete', {
+				organization: organizations.map(m => m.toJson()),
+			});
+			return {
+				message: 'Organization marked as deleted successfully',
+				organizations: organizations.map(m => m.toJson()),
+			};
+		}
+    throw new HttpException('Organization couldn\'t be deleted', HttpStatus.NOT_MODIFIED);
   }
 }

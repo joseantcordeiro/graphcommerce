@@ -10,6 +10,7 @@ import {
 	HttpStatus,
 	UseInterceptors,
 	CacheInterceptor,
+	Param,
 } from '@nestjs/common';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
@@ -32,12 +33,12 @@ export class ChannelController {
   	constructor(@InjectQueue('channel') private readonly channelQueue: Queue,
 		private readonly channelService: ChannelService) {}
 
-  @Get()
+  @Get(':channelId')
   @UseGuards(AuthGuard)
 	@Roles(Role.MANAGE_ORGANIZATION, Role.MANAGE_CHANNELS)
 	@UseGuards(RolesGuard)
-  async getChannel(@Body() properties: GetChannelDto,) {
-    const channels = await this.channelService.get(properties);
+  async getChannel(@Param('channelId') channelId: string) {
+    const channels = await this.channelService.get(channelId);
 		if (Array.isArray(channels)) {
 			return {
 				channels: channels.map(m => m.toJson()),
@@ -46,7 +47,7 @@ export class ChannelController {
 		throw new HttpException('Channel not found!', HttpStatus.NOT_FOUND);
   }
 
-	@Get('list')
+	@Get()
   @UseGuards(AuthGuard)
   async listChannels(@Session() session: SessionContainer) {
     const userId = session.getUserId();
@@ -64,14 +65,11 @@ export class ChannelController {
 	@Roles(Role.MANAGE_ORGANIZATION, Role.MANAGE_CHANNELS)
 	@UseGuards(RolesGuard)
   async postChannel(
-    @Session() session: SessionContainer,
-    @Body() properties: CreateChannelDto,
+		@Session() session: SessionContainer,
+    @Body() properties: CreateChannelDto
   ) {
-    const userId = session.getUserId();
-    const channels = await this.channelService.create(
-      userId,
-      properties,
-    );
+		const userId = session.getUserId();
+    const channels = await this.channelService.create(userId, properties);
 		if (Array.isArray(channels)) {
 			this.channelQueue.add('create', {
 				channel: channels.map(m => m.toJson()),
@@ -88,10 +86,8 @@ export class ChannelController {
 	@Roles(Role.MANAGE_ORGANIZATION, Role.MANAGE_CHANNELS)
 	@UseGuards(RolesGuard)
   async patchChannel(
-    @Session() session: SessionContainer,
     @Body() properties: UpdateChannelDto,
   ) {
-    const userId = session.getUserId();
 		const channels = await this.channelService.update(properties);
 		if (Array.isArray(channels)) {
 			this.channelQueue.add('update', {

@@ -4,7 +4,6 @@ import { PersonController } from '../../controller/person';
 import { MinioClientModule } from '../minio-client';
 import { BullModule } from '@nestjs/bull';
 
-@Global()
 @Module({
 	imports: [
 		MinioClientModule,
