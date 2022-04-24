@@ -12,7 +12,7 @@ export class ChannelService {
     const res = await this.neo4jService
       .read(
         `
-				MATCH (c:Channel {id: $channelId})<-[r:HAS_CHANNEL { deleted: false } ]-(o:Organization)
+				MATCH (c:Channel {id: $channelId})-[r:BELONGS_TO { deleted: false } ]->(o:Organization)
 			  RETURN c
 			  `,
         { channelId },
@@ -25,7 +25,7 @@ export class ChannelService {
 			`
 			MATCH (p:Person {id: $userId})-[:WORKS_IN]->(o:Organization)
 			WITH p, o
-			MATCH (c:Channel)<-[:HAS_CHANNEL { active: true, deleted: false }]-(o:Organization)
+			MATCH (c:Channel)-[:BELONGS_TO { active: true, deleted: false }]->(o:Organization)
 			RETURN c
 			`,
 			{ userId },
@@ -41,7 +41,7 @@ export class ChannelService {
 			MATCH (o:Organization { id: $properties.organizationId }),(a:Currency { code: $properties.defaultCurrency }), (c:Country { iso_2: $properties.defaultCountry })
 			WITH o, a, c, randomUUID() AS uuid
 			CREATE (m:Channel { id: uuid, name: $properties.name })
-			CREATE (o)-[:HAS_CHANNEL { createdBy: $userId, createdAt: datetime(), active: $properties.active, deleted: false }]->(m)
+			CREATE (o)<-[:BELONGS_TO { createdBy: $userId, createdAt: datetime(), active: $properties.active, deleted: false }]-(m)
 			CREATE (m)-[:HAS_DEFAULT_COUNTRY]->(c)
 			CREATE (m)-[:HAS_DEFAULT_CURRENCY]->(a)
 			RETURN m
@@ -60,7 +60,7 @@ export class ChannelService {
   ): Promise<Channel[] | any> {
     const res = await this.neo4jService.write(
       `
-		MATCH (c:Channel {id: $properties.channelId})<-[r:HAS_CHANNEL]-(o:Organization)
+		MATCH (c:Channel {id: $properties.channelId})-[r:BELONGS_TO]->(o:Organization)
 		WITH c, r
 		SET c.name = $properties.name
 		SET r.updatedAt = datetime(), r.active = $properties.active
@@ -73,15 +73,15 @@ export class ChannelService {
     return res.records.length ? res.records.map((row) => new Channel(row.get('c'))) : false;
   }
 
-  async delete(properties): Promise<Channel[] | any> {
+  async delete(userId, properties): Promise<Channel[] | any> {
     const res = await this.neo4jService.write(
       `
-			MATCH (c:Channel {id: $properties.channelId})<-[r:HAS_CHANNEL]-(o:Organization)
-			SET r.deleted = true, r.channelTargetId = $properties.targetChannelId
+			MATCH (c:Channel {id: $properties.channelId})-[r:BELONGS_TO]->(o:Organization)
+			SET r.deletedBy = $userId, r.deleted = true, r.channelTargetId = $properties.targetChannelId
 			RETURN c
 			`,
       {
-        properties,
+        userId, properties,
       },
     );
 		return res.records.length ? res.records.map((row) => new Channel(row.get('c'))) : false;

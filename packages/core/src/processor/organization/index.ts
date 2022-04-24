@@ -1,10 +1,12 @@
-import { OnQueueActive, OnQueueCompleted, Process, Processor } from '@nestjs/bull';
+import { OnGlobalQueueCompleted, OnQueueActive, OnQueueCompleted, Process, Processor } from '@nestjs/bull';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bull';
 import { Document } from 'meilisearch';
+import { Neo4jService } from 'nest-neo4j/dist';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CreateChannelProcessDto } from '../../dto/channel/queue';
+import { Channel } from '../../entity/channel';
 import { ChannelService } from '../../service/channel';
 import { SearchService } from '../../service/search';
 
@@ -12,9 +14,22 @@ import { SearchService } from '../../service/search';
 export class OrganizationProcessor {
   constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
 		private readonly searchService: SearchService,
+		private readonly neo4jService: Neo4jService,
 		private readonly channelService: ChannelService) {}
 
-	/** @Process('update')
+		async getDefaultChannel(objectId: string): Promise<Channel[] | any> {
+			const res = await this.neo4jService.read(
+				`
+				MATCH (c:Channel)-[:BELONGS_TO]->(o:Organization { id: $objectId })
+				RETURN c
+				`,
+				{ objectId },
+			);
+			return res.records.length ? res.records.map((row) => new Channel(row.get('c'))) : 'ERROR';
+			
+		}
+
+	@Process('update')
   async update(job: Job) {
     const doc: Document = job.data.organization;
 		const index = "organization";
@@ -23,18 +38,17 @@ export class OrganizationProcessor {
 
 	@Process('create')
   async create(job: Job) {
-		const properties: CreateChannelProcessDto = {
-			organizationId: job.data.organization[0].id,
-			name: 'default-channel',
-			active: true,
-			currencyCode: 'usd',
-			defaultCountry: 'us',
-		};
-		const channel = await this.channelService.create(properties);
-		properties.channelId = channel.getId();
-		const index = 'channel-' + properties.organizationId;
-		return this.searchService.addDocuments(index, [properties]);
-  } */
+		let doc: Document = job.data.organization;
+		let index = "organization";
+		this.searchService.addDocuments(index, [doc[0]])
+		const objectId = doc[0].id;
+		const channel = await this.getDefaultChannel(objectId);
+		if (channel === 'ERROR')
+			return
+		doc = channel.map(m => m.toJson()); 
+		index = 'channel-' + objectId;
+		return this.searchService.addDocuments(index, [doc[0]]);
+  }
 
 	@Process('delete')
   async delete(job: Job) {
@@ -48,9 +62,9 @@ export class OrganizationProcessor {
 	}
 	
 	@OnQueueCompleted()
-	async onGlobalCompleted(jobId: number, result: any) {
+	async onCompleted(jobId: number, result: any) {
 		// const job = await this.immediateQueue.getJob(jobId);
-		this.logger.info('[OrganizationProcessor] (Global) on completed: job ', jobId, ' -> result: ', result);
+		this.logger.info('[OrganizationProcessor] Job ' + jobId.toString() + ' Completed -> result: ', result);
 	}
 
 }

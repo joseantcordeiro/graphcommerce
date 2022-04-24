@@ -57,9 +57,9 @@ export class OrganizationController {
       properties,
     );
 		if (Array.isArray(organizations)) {
-			/** this.organizationQueue.add('create', {
+			this.organizationQueue.add('create', {
 				organization: organizations.map(m => m.toJson()),
-			}); */
+			});
 			return {
 				organizations: organizations.map(m => m.toJson()),
 			};
@@ -76,9 +76,9 @@ export class OrganizationController {
   ) {
 			const organizations = await this.organizationService.update(properties);
 			if (Array.isArray(organizations)) {
-				/** this.organizationQueue.add('update', {
+				this.organizationQueue.add('update', {
 					organization: organizations.map(m => m.toJson()),
-				}); */
+				});
 				return {
 					organizations: organizations.map(m => m.toJson()),
 				};

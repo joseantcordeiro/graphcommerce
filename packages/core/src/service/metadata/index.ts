@@ -14,8 +14,8 @@ export class MetadataService {
 		const res = await this.neo4jService.write(
 			`MATCH (n) WHERE (n.id = $properties.objectId)
 			 WITH n
-			 CREATE (m:Metadata { key: $properties.key, value: $properties.value, private: $properties.private })
-			 CREATE (n)-[:HAS_METADATA { addedBy: $userId, createdAt: datetime() }]->(m) 
+			 CREATE (m:Metadata { key: $properties.key, value: $properties.value })
+			 CREATE (n)-[:HAS_METADATA { addedBy: $userId, createdAt: datetime(), private: $properties.private }]->(m) 
 			 RETURN m
 			`,
 			{	userId, properties },
@@ -37,8 +37,8 @@ export class MetadataService {
 	async updateMetadata(properties: UpdateMetadataDto): Promise<Metadata[] | any> {
 		const res = await this.neo4jService.write(
 				`MATCH (n { id: $properties.objectId })-[r:HAS_METADATA]->(m:Metadata { key: $properties.key})
-				 SET m.value = $properties.value, m.private = $properties.private
-				 SET r.updatedAt = datetime()
+				 SET m.value = $properties.value
+				 SET r.updatedAt = datetime(), r.private = $properties.private
 				 RETURN m
 				`,
 				{	properties },
@@ -56,22 +56,22 @@ export class MetadataService {
 		return res.records.length ? res.records.map((row) => new Metadata(row.get('m'))) : {};
 	}
 
-	async getPublicMetadata(properties: GetMetadataDto): Promise<Metadata[] | any> {
+	async getPublicMetadata(objectId: string): Promise<Metadata[] | any> {
 		const res = await this.neo4jService.read(
-				`MATCH (n { id: $properties.objectId })-[:HAS_METADATA]->(m:Metadata { private: false})
+				`MATCH (n { id: $objectId })-[:HAS_METADATA  { private: false }]->(m:Metadata)
 				 RETURN m
 				`,
-				{	properties },
+				{	objectId },
 		);
 		return res.records.length ? res.records.map((row) => new Metadata(row.get('m'))) : {};
 	}
 
-	async getPrivateMetadata(properties: GetMetadataDto): Promise<Metadata[] | any> {
+	async getPrivateMetadata(objectId: string): Promise<Metadata[] | any> {
 		const res = await this.neo4jService.read(
-				`MATCH (n { id: $properties.objectId })-[:HAS_METADATA]->(m:Metadata { private: true})
+				`MATCH (n { id: $objectId })-[:HAS_METADATA { private: true }]->(m:Metadata)
 				 RETURN m
 				`,
-				{	properties },
+				{	objectId },
 		);
 		return res.records.length ? res.records.map((row) => new Metadata(row.get('m'))) : {};
 	}

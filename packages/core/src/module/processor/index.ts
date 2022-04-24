@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { ChannelProcessor } from '../../processor/channel';
+import { SearchProcessor } from '../../processor/search';
 import { MailProcessor } from '../../processor/mail';
 import { PersonProcessor } from '../../processor/person';
 import { PictureProcessor } from '../../processor/picture';
@@ -22,7 +22,7 @@ import { ChannelService } from '../../service/channel';
       name: 'picture',
     }),
 		BullModule.registerQueue({
-      name: 'channel',
+      name: 'search',
     }),
 		BullModule.registerQueue({
       name: 'organization',
@@ -41,7 +41,7 @@ import { ChannelService } from '../../service/channel';
   providers: [PersonProcessor,
 		MailProcessor,
 		PictureProcessor,
-		ChannelProcessor,
+		SearchProcessor,
 		OrganizationProcessor,
 		TeamProcessor,
 		RegionProcessor,

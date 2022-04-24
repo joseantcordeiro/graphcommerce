@@ -24,13 +24,12 @@ import { Roles } from '../../decorator/role';
 import { Session } from '../../decorator/session';
 import { SessionContainer } from 'supertokens-node/recipe/session';
 import { DeleteChannelDto } from '../../dto/channel/delete';
-import { GetChannelDto } from '../../dto/channel/get';
 
 
 @Controller('channel')
 @UseInterceptors(CacheInterceptor)
 export class ChannelController {
-  	constructor(@InjectQueue('channel') private readonly channelQueue: Queue,
+  	constructor(@InjectQueue('search') private readonly searchQueue: Queue,
 		private readonly channelService: ChannelService) {}
 
   @Get(':channelId')
@@ -71,8 +70,9 @@ export class ChannelController {
 		const userId = session.getUserId();
     const channels = await this.channelService.create(userId, properties);
 		if (Array.isArray(channels)) {
-			this.channelQueue.add('create', {
-				channel: channels.map(m => m.toJson()),
+			this.searchQueue.add('create', {
+				objectType: 'channel',
+				object: channels.map(m => m.toJson()),
 			});
 			return {
 				channels: channels.map(m => m.toJson()),
@@ -90,8 +90,9 @@ export class ChannelController {
   ) {
 		const channels = await this.channelService.update(properties);
 		if (Array.isArray(channels)) {
-			this.channelQueue.add('update', {
-				channel: channels.map(m => m.toJson()),
+			this.searchQueue.add('update', {
+				objectType: 'channel',
+				object: channels.map(m => m.toJson()),
 			});
 			return {
 				channels: channels.map(m => m.toJson()),
@@ -108,10 +109,11 @@ export class ChannelController {
 		@Body() properties: DeleteChannelDto,
 	) {
     const userId = session.getUserId();
-    const channels = this.channelService.delete(properties);
+    const channels = this.channelService.delete(userId, properties);
 		if (Array.isArray(channels)) {
-			this.channelQueue.add('delete', {
-				userId: userId, channelId: properties.channelId, targetChannelId: properties.targetChannelId,
+			this.searchQueue.add('delete', {
+				objectType: 'channel',
+				object: channels.map(m => m.toJson()),
 			});
 			return {
 				message: 'Channel marked to delete',

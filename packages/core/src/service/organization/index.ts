@@ -46,7 +46,7 @@ export class OrganizationService {
 			CREATE (o)-[:HAS_DEFAULT_CURRENCY]->(a)
 			CREATE (o)-[:HAS_DEFAULT_LANGUAGE]->(l)
 			CREATE (m:Channel { id: randomUUID(), name: 'default-channel' })
-			CREATE (o)-[:HAS_CHANNEL { createdBy: $userId, createdAt: datetime(), active: true, deleted: false }]->(m)
+			CREATE (o)<-[:BELONGS_TO { createdBy: $userId, createdAt: datetime(), active: true, deleted: false }]-(m)
 			CREATE (m)-[:HAS_DEFAULT_COUNTRY]->(c)
 			CREATE (m)-[:HAS_DEFAULT_CURRENCY]->(a)
 			WITH o, p

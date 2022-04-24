@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ChannelService } from '../../service/channel';
 import { ChannelController } from '../../controller/channel';
 import { MinioClientModule } from '../minio-client';
@@ -8,7 +8,7 @@ import { BullModule } from '@nestjs/bull';
 	imports: [
 		MinioClientModule,
 		BullModule.registerQueue({
-      name: 'channel',
+      name: 'search',
     }),
 	],
   providers: [ChannelService],

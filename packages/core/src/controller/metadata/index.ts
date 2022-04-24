@@ -1,4 +1,4 @@
-import { Body, CacheInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Patch, Post, Session, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, CacheInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Session, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CreateMetadataDto } from '../../dto/metadata/create';
 import { UpdateMetadataDto } from '../../dto/metadata/update';
 import { DeleteMetadataDto } from '../../dto/metadata/delete';
@@ -75,29 +75,29 @@ export class MetadataController {
 		throw new HttpException('Metadata couldn\'t be found', HttpStatus.NOT_FOUND);
   }
 
-	@Get('public')
+	@Get('public/:objectId')
   async getPublicMetadata(
-    @Body() properties: GetMetadataDto,
+    @Param('objectId') objectId: string,
   ) {
-    const metadata = await this.metadataService.getPublicMetadata(properties);
+    const metadata = await this.metadataService.getPublicMetadata(objectId);
 		if (Array.isArray(metadata)) {
 			return {
-				objectId: properties.objectId,
+				objectId: objectId,
 				metadata: metadata.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Metadata couldn\'t be found', HttpStatus.NOT_FOUND);
   }
 
-	@Get('private')
+	@Get('private/:objectId')
 	@UseGuards(AuthGuard)
   async getPrivateMetadata(
-    @Body() properties: GetMetadataDto,
+    @Param('objectId') objectId: string,
   ) {
-    const metadata = await this.metadataService.getPrivateMetadata(properties);
+    const metadata = await this.metadataService.getPrivateMetadata(objectId);
 		if (Array.isArray(metadata)) {
 			return {
-				objectId: properties.objectId,
+				objectId: objectId,
 				metadata: metadata.map(m => m.toJson()),
 			};
 		}

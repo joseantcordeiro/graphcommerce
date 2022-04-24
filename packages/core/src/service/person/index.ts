@@ -96,7 +96,7 @@ export class PersonService {
             CREATE (p:Person { id: $properties.userId, p.name = $properties.name, p.email = $properties.email })
 						CREATE (p)-[:HAS_DEFAULT_LANGUAGE]->(l)
 						CREATE (m:Metadata { key: 'DEFAULT_ORGANIZATION', value: '' })
-						CREATE (p)-[:HAS_METADATA]->(m:Metadata)
+						CREATE (p)-[:HAS_METADATA { private: false }]->(m:Metadata)
             RETURN p
         `,
         {
