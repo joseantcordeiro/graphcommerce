@@ -8,7 +8,7 @@ import { BullModule } from '@nestjs/bull';
 	imports: [
 		MinioClientModule,
 		BullModule.registerQueue({
-      name: 'category',
+      name: 'search',
     }),
 	],
   providers: [CategoryService],

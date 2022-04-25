@@ -3,6 +3,7 @@ import { Neo4jService } from 'nest-neo4j/dist';
 import { Category } from '../../entity/category';
 import { CreateCategoryDto } from '../../dto/category/create';
 import { UpdateCategoryDto } from '../../dto/category/update';
+import { ParentOfCategoryDto } from '../../dto/category/parent';
 
 @Injectable()
 export class CategoryService {
@@ -13,7 +14,7 @@ export class CategoryService {
 			`MATCH (o:Organization { id: $properties.organizationId })
 			 WITH o
 			 CREATE (c:Category { id: randomUUID(), name: $properties.name, description: $properties.description, seoTitle: $properties.seoTitle, seoDescription: $properties.seoDescription, seoKeywords: $properties.seoKeywords })
-			 CREATE (o)-[:HAS_CATEGORY { createdAt: datetime() }]->(c)
+			 CREATE (c)-[:BELONGS_TO { createdAt: datetime(), active: true, deleted: false }]->(o)
 			 RETURN c
 			`,
 			{	properties },
@@ -22,14 +23,15 @@ export class CategoryService {
 
   }
 
-	async deleteCategory(categoryId: string): Promise<any> {
-		await this.neo4jService.write(
-			`MATCH (c:Category { id: $categoryId })
-			 DETACH DELETE c
+	async deleteCategory(categoryId: string): Promise<Category[] | any> {
+		const res = await this.neo4jService.write(
+			`MATCH (c:Category { id: $categoryId })-[r:BELONGS_TO]->(o:Organization)
+			 SET r.deleted = true, r.deletedAt = datetime()
+			 RETURN c
 			`,
 			{	categoryId },
 		);
-		return {};
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : false;
 	}
 
 	async updateCategory(properties: UpdateCategoryDto): Promise<Category[] | any> {
@@ -37,7 +39,7 @@ export class CategoryService {
 				`MATCH (c:Category { id: $properties.categoryId })
 				 SET c.name = $properties.name, c.description = $properties.description, c.seoTitle = $properties.seoTitle, c.seoDescription = $properties.seoDescription, c.seoKeywords = $properties.seoKeywords
 				 WITH c
-				 MATCH (o:Organization)-[r:HAS_CATEGORY]->(c)
+				 MATCH (o:Organization)<-[r:BELONGS_TO]-(c)
 				 SET r.updatedAt = datetime()
 				 RETURN c
 				`,
@@ -58,10 +60,22 @@ export class CategoryService {
 
 	async getCategories(organizationId: string): Promise<Category[] | any> {
 		const res = await this.neo4jService.read(
-				`MATCH (o:Organization { id: $organizationId })-[:HAS_CATEGORY]->(c:Category)
+				`MATCH (c:Category)-[:BELONGS_TO { active: true, deleted: false }]->(o:Organization { id: $organizationId })
 				 RETURN c
 				`,
 				{	organizationId },
+		);
+		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : false;
+	}
+
+	async parentOf(properties: ParentOfCategoryDto): Promise<Category[] | any> {
+		const res = await this.neo4jService.write(
+				`MATCH (c:Category { id: $properties.categoryId }), (p:Category { id: $properties.parentId })
+				 WITH c, p
+				 MERGE (p)-[:IS_PARENT_OF]->(c)
+				 RETURN c
+				`,
+				{	properties },
 		);
 		return res.records.length ? res.records.map((row) => new Category(row.get('c'))) : false;
 	}

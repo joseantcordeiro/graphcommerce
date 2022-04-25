@@ -46,6 +46,8 @@ export class SearchProcessor {
 	@Process('create')
   async create(job: Job): Promise<any> {
 		const doc: Document = job.data.object;
+		doc[0].deleted = false;
+		doc[0].active = true;
 		let index = await this.getIndex(doc[0].id);
 		if (index === 'ERROR')
 			return;
@@ -55,8 +57,24 @@ export class SearchProcessor {
 
 	@Process('delete')
   async delete(job: Job) {
-    this.logger.info(`[SearchProcessor] Job ${job.id}-delete process. Data:`, job.data);
-    return {};
+    const doc: Document = job.data.object;
+		doc[0].deleted = true;
+		let index = await this.getIndex(doc[0].id);
+		if (index === 'ERROR')
+			return;
+		index = job.data.objectType + '-' + index;
+		return this.searchService.updateDocuments(index, [doc[0]]);
+  }
+
+	@Process('parent')
+  async parent(job: Job) {
+    const doc: Document = job.data.object;
+		doc[0].parentId = job.data.parentId;
+		let index = await this.getIndex(doc[0].id);
+		if (index === 'ERROR')
+			return;
+		index = job.data.objectType + '-' + index;
+		return this.searchService.updateDocuments(index, [doc[0]]);
   }
 
 	@OnQueueActive()
