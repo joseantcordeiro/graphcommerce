@@ -4,7 +4,6 @@ import { SearchProcessor } from '../../processor/search';
 import { MailProcessor } from '../../processor/mail';
 import { PersonProcessor } from '../../processor/person';
 import { PictureProcessor } from '../../processor/picture';
-import { TeamProcessor } from '../../processor/team';
 import { OrganizationProcessor } from '../../processor/organization';
 import { RegionProcessor } from '../../processor/region';
 import { ChannelService } from '../../service/channel';
@@ -27,9 +26,6 @@ import { ChannelService } from '../../service/channel';
       name: 'organization',
     }),
 		BullModule.registerQueue({
-      name: 'team',
-    }),
-		BullModule.registerQueue({
       name: 'region',
     }),
   ],
@@ -39,7 +35,6 @@ import { ChannelService } from '../../service/channel';
 		PictureProcessor,
 		SearchProcessor,
 		OrganizationProcessor,
-		TeamProcessor,
 		RegionProcessor,
 		ChannelService
 	],

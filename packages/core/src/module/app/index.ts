@@ -19,7 +19,6 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import { BullModule } from '@nestjs/bull';
-import { TeamModule } from '../team';
 import { MetadataModule } from '../metadata';
 import { ChannelModule } from '../channel';
 import { RegionModule } from '../region';
@@ -83,7 +82,6 @@ import { GroupModule } from '../group';
 		MetadataModule,
 		PersonModule,
 		OrganizationModule,
-		TeamModule,
 		ChannelModule,
 		RegionModule,
 		CategoryModule,
