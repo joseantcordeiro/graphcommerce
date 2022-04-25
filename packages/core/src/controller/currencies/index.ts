@@ -12,7 +12,7 @@ export class CurrenciesController {
     const currencies = await this.currenciesService.list();
 
     return {
-      currencies: currencies.map((currency) => currency.toJson()),
+      results: currencies.map((currency) => currency.toJson()),
     };
   }
 }

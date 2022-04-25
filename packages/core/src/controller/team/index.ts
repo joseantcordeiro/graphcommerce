@@ -45,7 +45,7 @@ export class TeamController {
 				userId: userId, team: teams,
 			});
 			return {
-				teams: teams.map(m => m.toJson()),
+				results: teams.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Team couldn\'t be created', HttpStatus.NOT_MODIFIED);
@@ -66,7 +66,7 @@ export class TeamController {
 					userId: userId, team: teams,
 				});
 				return {
-					teams: teams.map(m => m.toJson()),
+					results: teams.map(m => m.toJson()),
 				};
 			}
 			throw new HttpException('Team couldn\'t be updated', HttpStatus.NOT_MODIFIED);
@@ -82,7 +82,7 @@ export class TeamController {
 
 		if (Array.isArray(teams)) {
 			return {
-				teams: teams.map(m => m.toJson()),
+				results: teams.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('You is not a member of any team', HttpStatus.NOT_FOUND);
@@ -96,7 +96,7 @@ export class TeamController {
 
 		if (Array.isArray(teams)) {
 			return {
-				teams: teams.map(m => m.withMembers()),
+				results: teams.map(m => m.withMembers()),
 			};
 		}
 		throw new HttpException('Team not found', HttpStatus.NOT_FOUND);

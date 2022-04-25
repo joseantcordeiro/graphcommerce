@@ -25,7 +25,7 @@ export class CategoryController {
 				object: category.map(m => m.toJson()),
 			});
 			return {
-				category: category.map(m => m.toJson()),
+				results: category.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Category couldn\'t be added', HttpStatus.NOT_MODIFIED);
@@ -44,7 +44,7 @@ export class CategoryController {
 			});
 			return {
 				message: 'Category marked to be deleted successfully',
-				category: category.map(m => m.toJson()),
+				results: category.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Category couldn\'t be deleted', HttpStatus.NOT_MODIFIED);
@@ -61,7 +61,7 @@ export class CategoryController {
 				object: category.map(m => m.toJson()),
 			});
 			return {
-				category: category.map(m => m.toJson()),
+				results: category.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Category couldn\'t be updated', HttpStatus.NOT_MODIFIED);
@@ -75,7 +75,7 @@ export class CategoryController {
     const category = await this.categoryService.getCategory(categoryId);
 		if (Array.isArray(category)) {
 			return {
-				category: category.map(m => m.toJson()),
+				results: category.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('CategoryId ${categoryId} couldn\'t be found', HttpStatus.NOT_FOUND);
@@ -89,7 +89,7 @@ export class CategoryController {
 		const categories = await this.categoryService.getCategories(organizationId);
 		if (Array.isArray(categories)) {
 			return {
-				categories: categories.map(m => m.toJson()),
+				results: categories.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Categories couldn\'t be found', HttpStatus.NOT_FOUND);
@@ -108,7 +108,7 @@ export class CategoryController {
 				object: category.map(m => m.toJson()),
 			});
 			return {
-				category: category.map(m => m.toJson()),
+				results: category.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Category couldn\'t be updated', HttpStatus.NOT_MODIFIED);

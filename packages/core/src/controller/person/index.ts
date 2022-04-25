@@ -49,7 +49,7 @@ export class PersonController {
 					name: person[0].getName(),
 				});
 				return {
-					persons: person.map(m => m.toJson()),
+					results: person.map(m => m.toJson()),
 				};
 			}
 		}
@@ -63,7 +63,7 @@ export class PersonController {
     const person = await this.personService.get(userId);
 		if (Array.isArray(person)) {
 			return {
-				persons: person.map(m => m.toJson()),
+				results: person.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Something is wrong, try to refresh the session.', HttpStatus.NOT_FOUND);
@@ -75,7 +75,7 @@ export class PersonController {
 		const person = await this.personService.find(properties);
 		if (Array.isArray(person)) {
 			return {
-				persons: person.map(m => m.toJson()),
+				results: person.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Person not found in current organization', HttpStatus.NOT_FOUND);
@@ -95,7 +95,7 @@ export class PersonController {
 					userId: userId, person: person,
 				});
 				return {
-					persons: person.map(m => m.toJson()),
+					results: person.map(m => m.toJson()),
 				};
 			}
 			throw new HttpException('Person couldn\'t be updated', HttpStatus.NOT_MODIFIED);
@@ -114,7 +114,7 @@ export class PersonController {
 				userId: userId, organization: defaultOrganization,
 			});
 			return {
-				defaultOrganization: defaultOrganization.map(m => m.toJson()),
+				results: defaultOrganization.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Something is wrong, try to refresh the session.', HttpStatus.NOT_FOUND);
@@ -127,7 +127,7 @@ export class PersonController {
 		const defaultOrganization = await this.personService.organization(userId);
 		if (Array.isArray(defaultOrganization)) {
 			return {
-				defaultOrganization: defaultOrganization.map(m => m.toJson()),
+				results: defaultOrganization.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Something is wrong, try to refresh the session.', HttpStatus.NOT_FOUND);

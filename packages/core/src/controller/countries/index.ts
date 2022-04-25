@@ -12,7 +12,7 @@ export class CountriesController {
     const countries = await this.countriesService.list();
 
     return {
-      countries: countries.map((country) => country.toJson()),
+      results: countries.map((country) => country.toJson()),
     };
   }
 }

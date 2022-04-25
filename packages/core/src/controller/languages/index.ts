@@ -12,7 +12,7 @@ export class LanguagesController {
     const languages = await this.languagesService.list();
 
     return {
-      languages: languages.map((language) => language.toJson()),
+      results: languages.map((language) => language.toJson()),
     };
   }
 }

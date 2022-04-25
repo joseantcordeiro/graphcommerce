@@ -40,7 +40,7 @@ export class ChannelController {
     const channels = await this.channelService.get(channelId);
 		if (Array.isArray(channels)) {
 			return {
-				channels: channels.map(m => m.toJson()),
+				results: channels.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Channel not found!', HttpStatus.NOT_FOUND);
@@ -53,7 +53,7 @@ export class ChannelController {
     const channels = await this.channelService.list(userId);
 		if (Array.isArray(channels)) {
 			return {
-				channels: channels.map(m => m.toJson()),
+				results: channels.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('You is not a manager of any channel', HttpStatus.NOT_FOUND);
@@ -75,7 +75,7 @@ export class ChannelController {
 				object: channels.map(m => m.toJson()),
 			});
 			return {
-				channels: channels.map(m => m.toJson()),
+				results: channels.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Channel couldn\'t be created', HttpStatus.NOT_MODIFIED);
@@ -95,7 +95,7 @@ export class ChannelController {
 				object: channels.map(m => m.toJson()),
 			});
 			return {
-				channels: channels.map(m => m.toJson()),
+				results: channels.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Organization couldn\'t be updated', HttpStatus.NOT_MODIFIED);
@@ -117,7 +117,7 @@ export class ChannelController {
 			});
 			return {
 				message: 'Channel marked to delete',
-				channels: channels.map(c => c.toJson()),
+				results: channels.map(c => c.toJson()),
 			}
 		}
 		throw new HttpException('Channel couldn\'t be deleted', HttpStatus.NOT_MODIFIED);

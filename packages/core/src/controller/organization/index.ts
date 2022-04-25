@@ -39,7 +39,7 @@ export class OrganizationController {
     const organizations = await this.organizationService.get(userId);
 		if (Array.isArray(organizations)) {
 			return {
-				organizations: organizations.map(m => m.toJson()),
+				results: organizations.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('You is not a member of any organization', HttpStatus.NOT_FOUND);
@@ -61,7 +61,7 @@ export class OrganizationController {
 				organization: organizations.map(m => m.toJson()),
 			});
 			return {
-				organizations: organizations.map(m => m.toJson()),
+				results: organizations.map(m => m.toJson()),
 			};
 		}
 		throw new HttpException('Organization couldn\'t be created', HttpStatus.NOT_MODIFIED);
@@ -80,7 +80,7 @@ export class OrganizationController {
 					organization: organizations.map(m => m.toJson()),
 				});
 				return {
-					organizations: organizations.map(m => m.toJson()),
+					results: organizations.map(m => m.toJson()),
 				};
 			}
 			throw new HttpException('Organization couldn\'t be updated', HttpStatus.NOT_MODIFIED);
@@ -101,7 +101,7 @@ export class OrganizationController {
 			});
 			return {
 				message: 'Organization marked as deleted successfully',
-				organizations: organizations.map(m => m.toJson()),
+				results: organizations.map(m => m.toJson()),
 			};
 		}
     throw new HttpException('Organization couldn\'t be deleted', HttpStatus.NOT_MODIFIED);
