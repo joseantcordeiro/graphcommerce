@@ -7,9 +7,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SearchService } from '../../service/search';
 
-/** var sharp = require('sharp');
-var request = require('request').defaults({encoding: null}); */
-
 @Processor('search')
 export class SearchProcessor {
   constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
