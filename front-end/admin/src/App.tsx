@@ -96,6 +96,7 @@ function App() {
   let [showSessionExpiredPopup, updateShowSessionExpiredPopup] = useState(false);
 	let { userId, doesSessionExist } = useSessionContext();
 	let [ user, updateUser ] = useState(initialGlobalState);
+	let [ organization, setOrganization ] = useState({ name: "", id: "" });
 
 	async function loadUserData() {
 		try {
@@ -108,9 +109,12 @@ function App() {
 				name: response.data.results[0].name,
 				email: response.data.results[0].email,
 				picture: response.data.results[0].picture,
-				/** defaultOrganizationId: response.data.defaultOrganization[0].id,
-				defaultOrganizationName: response.data.defaultOrganization[0].name, */
 			} );
+			const res = await axios.get(getApiDomain() + getApiVersion() + "/person/organization");
+			if (res.statusText !== "OK") {
+				throw Error(res.statusText);
+			}
+			setOrganization( { name: res.data.results[0].name, id: res.data.results[0].id } );
 		} catch (err) {
 			console.log(err);
 		}
@@ -126,7 +130,7 @@ function App() {
     <div className="App">
         <Router>
           <div className="fill">
-						{!doesSessionExist ? <Nav currentUser={user} /> : null}
+						{!doesSessionExist ? <Nav currentUser={user} organization={organization} /> : null}
             <Routes>
               {/* This shows the login UI on "/auth" route */}
               {getSuperTokensRoutesForReactRouterDom(require("react-router-dom"))}
@@ -220,7 +224,7 @@ function App() {
                     onSessionExpired={() => {
                       updateShowSessionExpiredPopup(true);
                     }}>
-                    <Group />
+                    <Group organization={organization}/>
                     {showSessionExpiredPopup && <SessionExpiredPopup />}
                   </EmailPassword.EmailPasswordAuth>
                 }

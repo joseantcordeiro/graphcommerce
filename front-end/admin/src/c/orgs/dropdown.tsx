@@ -8,35 +8,26 @@ import cx from "classnames";
 Session.addAxiosInterceptors(axios);
 
 interface IProps {
+	organization: { name: string; id: string };
 }
 
 interface IState {
 	data: { name: string,	id: string }[];
-	organization: { name: string,	id: string };
 }
 
 export default class OrgDropDown extends Component<IProps, IState> {
 	constructor(props: IProps) {
     super(props)
-    this.state = { data: [], organization: { name: "", id: "" } };
+    this.state = { data: [] };
   }
 
 	async componentDidMount() {
     try {
-      const response = await axios.get(getApiDomain() + "/api/v1/organization");
+      let response = await axios.get(getApiDomain() + "/api/v1/organization");
 			if (response.statusText !== "OK") {
         throw Error(response.statusText);
       }
       this.setState({ data: response.data.results });
-    } catch (error) {
-      console.log(error);
-    }
-		try {
-      const response = await axios.get(getApiDomain() + "/api/v1/person/organization");
-			if (response.statusText !== "OK") {
-        throw Error(response.statusText);
-      }
-      this.setState({ organization: response.data.results });
     } catch (error) {
       console.log(error);
     }
@@ -66,7 +57,7 @@ export default class OrgDropDown extends Component<IProps, IState> {
 
 			<div className="navbar-dropdown">
 			{this.state.data.map(item => (
-				<a className={cx("navbar-item", item.id === this.state.organization.id && "is-active")} id={item.id} >
+				<a className={cx("navbar-item", item.id === this.props.organization.id && "is-active")} id={item.id} >
 					{item.name}
 				</a>
 			))}

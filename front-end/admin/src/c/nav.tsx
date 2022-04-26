@@ -10,6 +10,7 @@ Session.addAxiosInterceptors(axios);
 
 interface IProps {
 	currentUser: CurrentUser;
+	organization: { name: string; id: string };
 }
 
 export default function Nav(props: IProps) {
@@ -24,9 +25,6 @@ return (
 
 <nav className="navbar is-black" role="navigation" aria-label="main navigation">
 	<div className="navbar-brand">
-		<figure className="image is-48x48">
-			<img className="is-rounded" src="https://joseantcordeiro.hopto.org/assets/img/logo.png" alt=""/>
-		</figure>
 			<a role="button" className="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
 				<span aria-hidden="true"></span>
 				<span aria-hidden="true"></span>
@@ -40,9 +38,9 @@ return (
 			<span className="icon">
 					<i className="fa fa-home"></i>
 				</span>
-			<span>{}</span>
+			<span>{props.organization.name}</span>
 			</a>
-			<OrgDropDown />
+			<OrgDropDown organization={props.organization}/>
 			<a className="navbar-item" href="/dashboard">
 				Dashboard
 			</a>

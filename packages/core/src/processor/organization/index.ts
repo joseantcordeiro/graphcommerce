@@ -1,21 +1,19 @@
-import { OnGlobalQueueCompleted, OnQueueActive, OnQueueCompleted, Process, Processor } from '@nestjs/bull';
+import { OnQueueActive, OnQueueCompleted, Process, Processor } from '@nestjs/bull';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bull';
 import { Document } from 'meilisearch';
 import { Neo4jService } from 'nest-neo4j/dist';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { CreateChannelProcessDto } from '../../dto/channel/queue';
+import { CreateIndexDto } from '../../dto/search/index/create';
 import { Channel } from '../../entity/channel';
-import { ChannelService } from '../../service/channel';
 import { SearchService } from '../../service/search';
 
 @Processor('organization')
 export class OrganizationProcessor {
   constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
 		private readonly searchService: SearchService,
-		private readonly neo4jService: Neo4jService,
-		private readonly channelService: ChannelService) {}
+		private readonly neo4jService: Neo4jService) {}
 
 		async getDefaultChannel(objectId: string): Promise<Channel[] | any> {
 			const res = await this.neo4jService.read(
@@ -42,10 +40,33 @@ export class OrganizationProcessor {
 		let index = "organization";
 		this.searchService.addDocuments(index, [doc[0]])
 		const objectId = doc[0].id;
+		let createIndex: CreateIndexDto = {
+			uid: "group-" + objectId,
+			primaryKey: "id",
+		};
+		this.searchService.addIndex(createIndex);
+		this.searchService.setFilterableAttributes(createIndex.uid, [
+			"deleted",
+			"active"
+		]);
+		createIndex.uid = "category-" + objectId;
+		this.searchService.addIndex(createIndex);
+		this.searchService.setFilterableAttributes(createIndex.uid, [
+			"deleted",
+			"active"
+		]);
+		createIndex.uid = "channel-" + objectId;
+		this.searchService.addIndex(createIndex);
+		this.searchService.setFilterableAttributes(createIndex.uid, [
+			"deleted",
+			"active"
+		]);
 		const channel = await this.getDefaultChannel(objectId);
 		if (channel === 'ERROR')
 			return
-		doc = channel.map(m => m.toJson()); 
+		doc = channel.map(m => m.toJson());
+		doc[0].active = true;
+		doc[0].deleted = false;
 		index = 'channel-' + objectId;
 		return this.searchService.addDocuments(index, [doc[0]]);
   }

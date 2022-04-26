@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import EnqueuedUpdate, { Document, MeiliSearch, EnqueuedTask } from 'meilisearch';
+import { Document, MeiliSearch, EnqueuedTask } from 'meilisearch';
 import { InjectMeiliSearch } from '../../decorator/search';
 import { CreateIndexDto } from '../../dto/search/index/create';
 
