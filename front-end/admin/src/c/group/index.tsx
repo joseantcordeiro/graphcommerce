@@ -14,15 +14,15 @@ const searchClient = instantMeiliSearch(
 );
 
 function Group () {
+	const [organization, setOrganization] = useState({ name: "", id: "" });
 	const [searchedWord, setSearch] = useState("");
   const [resultSearch, setResults] = useState([]);
   const [resultCards, setCards] = useState([]);
-	const [organization, setOrganization] = useState({ name: "", id: "" });
 
 	useEffect(() => {
 		async function getOrganization() {
 			try {
-				const response = await axios.get(getApiDomain() + + getApiVersion() + "/person/organization");
+				const response = await axios.get(getApiDomain() + getApiVersion() + "/person/organization");
 				if (response.statusText !== "OK") {
 					throw Error(response.statusText);
 				}
@@ -32,18 +32,19 @@ function Group () {
 			}
 		}
 		getOrganization();
-	}, [organization]);
+	}, []);
 
 	useEffect(() => {
     // Create an scoped async function in the hook
     async function searchWithMeili() {
-			const index = searchClient.getIndex('group-' + organization.id);
-      const search = index.search(searchedWord, {
+			// const index = searchClient.getIndex('group-' + organization.id);
+			const search = await axios.get(getApiDomain() + getApiVersion() + "/search/indexes/group-" + organization.id + "/search?q=" + searchedWord);
+      /** const search = index.search(searchedWord, {
 				limit: 10,
 				attributesToHighlight: ["name"],
 				filter: 'deleted = false'
-			});
-      setResults(search.hits);
+			}); */
+      setResults(search.data.hits);
     }
     // Execute the created function directly
     searchWithMeili();
@@ -52,8 +53,8 @@ function Group () {
 	useEffect(() => {
 		async function getCards () {
 			let arrayItems: any = [];
-			for (let i = 0; i < resultSearch.length; i++) {
-				const group: any = resultSearch[i];
+			for (const element of resultSearch) {
+				const group: any = element;
 				arrayItems.push(
 					<div className="box">
 						<h1 className="title">{group.name}</h1>
@@ -69,31 +70,20 @@ function Group () {
 	return (
     <div className="container">
       <div className="columns is-centered">
-        <header className="">
-          
+				<div className="box">
 					<div className="tile" >
             Stop looking for an item — find it and work hard!
           </div>
-          <div className="box">
-						<button className="button">
-              <svg
-                className="icon"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-              >
-                <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" />
-              </svg>
-            </button>
+
             <input
               type="text"
               value={searchedWord}
               onChange={(event) => setSearch(event.target.value)}
               className="input is-medium"
-              placeholder="Group Name, description, …"
+              placeholder="Type the Group Name, description, …"
             />
-          </div>
-        </header>
+
+        </div>
       </div>
 
       <div>

@@ -93,10 +93,10 @@ export class PersonService {
         `
 						MATCH (l:Language { alpha_2: $properties.defaultLanguage })
 						WITH l
-            CREATE (p:Person { id: $properties.userId, p.name = $properties.name, p.email = $properties.email })
+            CREATE (p:Person { id: $properties.userId, name: $properties.name, email: $properties.email })
 						CREATE (p)-[:HAS_DEFAULT_LANGUAGE]->(l)
 						CREATE (m:Metadata { key: 'DEFAULT_ORGANIZATION', value: '' })
-						CREATE (p)-[:HAS_METADATA { private: false }]->(m:Metadata)
+						CREATE (p)-[:HAS_METADATA { private: false }]->(m)
             RETURN p
         `,
         {

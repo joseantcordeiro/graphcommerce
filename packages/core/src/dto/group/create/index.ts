@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { GroupType } from '../../../enum/group';
 export class CreateGroupDto {
 
 	@ApiProperty({
@@ -29,5 +30,12 @@ export class CreateGroupDto {
 		example: true,
 	})
 	active: boolean = true;
+
+	@ApiProperty({
+		required: false,
+		description: 'The type of the group',
+		example: GroupType.PERMISSION,
+	})
+	type: GroupType = GroupType.PERMISSION;
 
 }

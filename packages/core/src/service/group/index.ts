@@ -40,7 +40,7 @@ export class GroupService {
       `
 			MATCH (o:Organization { id: $properties.organizationId })
 			WITH o, randomUUID() AS uuid
-			CREATE (g:Group { id: uuid, name: $properties.name, description: $properties.description })
+			CREATE (g:Group { id: uuid, name: $properties.name, description: $properties.description, type: $properties.type })
 			CREATE (o)<-[:BELONGS_TO { createdBy: $userId, createdAt: datetime(), active: $properties.active, deleted: false }]-(g)
 			RETURN g
 	  `,

@@ -100,7 +100,7 @@ export class PersonController {
 			}
 			throw new HttpException('Person couldn\'t be updated', HttpStatus.NOT_MODIFIED);
     }
-		throw new HttpException('You need to have the MANAGE_ORGANIZATION role', HttpStatus.FORBIDDEN);
+		throw new HttpException('You need to be the signup user', HttpStatus.FORBIDDEN);
   }
 
 	@UseGuards(AuthGuard)

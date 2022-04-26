@@ -66,7 +66,31 @@ export class SearchService {
 	}
 
 	async searchDocuments(indexId: string, query: string): Promise<any> {
-		return this.meiliSearchClient.index(indexId).search(query);
+		return this.meiliSearchClient.index(indexId).search(query, { filter: ['deleted = false'] });
+	}
+
+	async getSearchableAttributes(indexId: string): Promise<any> {
+		return this.meiliSearchClient.index(indexId).getSearchableAttributes();
+	}
+
+	async setSearchableAttributes(indexId: string, attributes: Array<string>): Promise<any> {
+		return this.meiliSearchClient.index(indexId).updateSearchableAttributes(attributes);
+	}
+
+	async resetSearchableAttributes(indexId: string): Promise<any> {
+		return this.meiliSearchClient.index(indexId).resetSearchableAttributes();
+	}
+
+	async getFilterableAttributes(indexId: string): Promise<any> {
+		return this.meiliSearchClient.index(indexId).getFilterableAttributes();
+	}
+
+	async setFilterableAttributes(indexId: string, attributes: Array<string>): Promise<any> {
+		return this.meiliSearchClient.index(indexId).updateFilterableAttributes(attributes);
+	}
+
+	async resetFilterableAttributes(indexId: string): Promise<any> {
+		return this.meiliSearchClient.index(indexId).resetFilterableAttributes();
 	}
 
 }

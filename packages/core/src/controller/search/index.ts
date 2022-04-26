@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { SearchService } from '../../service/search';
 import { Role } from '../../enum/role';
 import { Roles } from '../../decorator/role';
@@ -67,7 +67,7 @@ export class SearchController {
 
 	@Get('indexes/:indexId/search')
 	@UseGuards(AuthGuard)
-	async search(@Param('indexId') indexId: string, @Body() query: SearchDocumentsDto) {
+	async search(@Param('indexId') indexId: string, @Query() query: SearchDocumentsDto) {
 		return this.searchService.searchDocuments(indexId, query.q);
 	}
 
@@ -75,6 +75,42 @@ export class SearchController {
 	@UseGuards(AuthGuard)
 	async deleteIndex(@Param('indexId') indexId: string) {
 		return this.searchService.deleteIndex(indexId);
+	}
+
+	@Get('indexes/:indexId/settings/searchable-attributes')
+	@UseGuards(AuthGuard)
+	async getSearchableAttributes(@Param('indexId') indexId: string) {
+		return this.searchService.getSearchableAttributes(indexId);
+	}
+
+	@Post('indexes/:indexId/settings/searchable-attributes')
+	@UseGuards(AuthGuard)
+	async setSearchableAttributes(@Param('indexId') indexId: string, @Body() attributes: string[]) {
+		return this.searchService.setSearchableAttributes(indexId, attributes);
+	}
+
+	@Delete('indexes/:indexId/settings/searchable-attributes')
+	@UseGuards(AuthGuard)
+	async deleteSearchableAttributes(@Param('indexId') indexId: string) {
+		return this.searchService.resetSearchableAttributes(indexId);
+	}
+
+	@Get('indexes/:indexId/settings/filterable-attributes')
+	@UseGuards(AuthGuard)
+	async getFilterableAttributes(@Param('indexId') indexId: string) {
+		return this.searchService.getFilterableAttributes(indexId);
+	}
+
+	@Post('indexes/:indexId/settings/filterable-attributes')
+	@UseGuards(AuthGuard)
+	async setFilterableAttributes(@Param('indexId') indexId: string, @Body() attributes: string[]) {
+		return this.searchService.setFilterableAttributes(indexId, attributes);
+	}
+
+	@Delete('indexes/:indexId/settings/filterable-attributes')
+	@UseGuards(AuthGuard)
+	async deleteFilterableAttributes(@Param('indexId') indexId: string) {
+		return this.searchService.resetFilterableAttributes(indexId);
 	}
 
 }
