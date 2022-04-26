@@ -45,7 +45,7 @@ export default class Profile extends Component<IProps, IState> {
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
-      this.setState({ languages: res.data.languages });
+      this.setState({ languages: res.data.results });
     } catch (error) {
       console.log(error);
     }

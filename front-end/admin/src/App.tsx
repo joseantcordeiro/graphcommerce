@@ -12,6 +12,7 @@ import axios from "axios";
 import Nav from "./c/nav";
 import Onboarding from "./c/onboarding/Onboarding";
 import CreateOrganization from "./c/orgs/create";
+import Group from "./c/group";
 
 export function getApiDomain() {
     const apiPort = process.env.REACT_APP_API_PORT || 8000;
@@ -89,32 +90,32 @@ SuperTokens.init({
 
 Session.addAxiosInterceptors(axios);
 
-const initialGlobalState = { userId: "", name: "", email: "", picture: "", defaultOrganizationId: "", defaultOrganizationName: ""};
+const initialGlobalState = { userId: "", name: "", email: "", picture: ""};
 
 function App() {
   let [showSessionExpiredPopup, updateShowSessionExpiredPopup] = useState(false);
 	let { userId, doesSessionExist } = useSessionContext();
 	let [ user, updateUser ] = useState(initialGlobalState);
 
-		async function loadUserData() {
+	async function loadUserData() {
 		try {
 			const response = await axios.get(getApiDomain() + getApiVersion() + "/person");
 			if (response.statusText !== "OK") {
 				throw Error(response.statusText);
 			}
 			updateUser( { 
-				userId: response.data.persons[0].id,
-				name: response.data.persons[0].name,
-				email: response.data.persons[0].email,
-				picture: response.data.persons[0].picture,
-				defaultOrganizationId: response.data.defaultOrganization[0].id,
-				defaultOrganizationName: response.data.defaultOrganization[0].name,
+				userId: response.data.results[0].id,
+				name: response.data.results[0].name,
+				email: response.data.results[0].email,
+				picture: response.data.results[0].picture,
+				/** defaultOrganizationId: response.data.defaultOrganization[0].id,
+				defaultOrganizationName: response.data.defaultOrganization[0].name, */
 			} );
 		} catch (err) {
 			console.log(err);
 		}
 		return(initialGlobalState);
-		}
+	}
 
 
 	useEffect(() => {
@@ -204,6 +205,22 @@ function App() {
                       updateShowSessionExpiredPopup(true);
                     }}>
                     <CreateOrganization userId={userId} />
+                    {showSessionExpiredPopup && <SessionExpiredPopup />}
+                  </EmailPassword.EmailPasswordAuth>
+                }
+              />
+
+							<Route
+                path="/group"
+                element={
+                                /* This protects the "/" route so that it shows 
+                                <Home /> only if the user is logged in.
+                                Else it redirects the user to "/auth" */
+                  <EmailPassword.EmailPasswordAuth
+                    onSessionExpired={() => {
+                      updateShowSessionExpiredPopup(true);
+                    }}>
+                    <Group />
                     {showSessionExpiredPopup && <SessionExpiredPopup />}
                   </EmailPassword.EmailPasswordAuth>
                 }

@@ -3,6 +3,6 @@ export type CurrentUser = {
   name: string;
 	email: string;
 	picture: string;
-	defaultOrganizationId: string;
-	defaultOrganizationName: string;
+	/** defaultOrganizationId: string;
+	defaultOrganizationName: string; */
 }

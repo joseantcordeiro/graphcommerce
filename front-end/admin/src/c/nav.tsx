@@ -40,15 +40,15 @@ return (
 			<span className="icon">
 					<i className="fa fa-home"></i>
 				</span>
-			<span>{props.currentUser.defaultOrganizationName}</span>
+			<span>{}</span>
 			</a>
-			<OrgDropDown id={props.currentUser.defaultOrganizationId}/>
+			<OrgDropDown />
 			<a className="navbar-item" href="/dashboard">
 				Dashboard
 			</a>
 
-			<a className="navbar-item" href="/teams">
-				Teams
+			<a className="navbar-item" href="/group">
+				Groups
 			</a>
 
 			<a className="navbar-item" href="/settings">

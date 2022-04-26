@@ -57,7 +57,7 @@ export default class CreateOrganization extends Component<IProps, IState> {
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
-      this.setState({ languages: res.data.languages });
+      this.setState({ languages: res.data.results });
     } catch (error) {
       console.log(error);
     }
@@ -66,7 +66,7 @@ export default class CreateOrganization extends Component<IProps, IState> {
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
-      this.setState({ countries: res.data.countries });
+      this.setState({ countries: res.data.results });
     } catch (error) {
       console.log(error);
     }
@@ -75,7 +75,7 @@ export default class CreateOrganization extends Component<IProps, IState> {
 			if (res.statusText !== "OK") {
         throw Error(res.statusText);
       }
-      this.setState({ currencies: res.data.currencies });
+      this.setState({ currencies: res.data.results });
     } catch (error) {
       console.log(error);
     }
