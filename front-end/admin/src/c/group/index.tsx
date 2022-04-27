@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { confirmAlert } from 'react-confirm-alert';
 import axios from 'axios';
 import { getApiDomain, getApiVersion } from '../../App';
 import Session from "supertokens-auth-react/recipe/session";
@@ -13,6 +14,36 @@ function Group (props: IProps) {
 	const [searchedWord, setSearch] = useState("");
   const [resultSearch, setResults] = useState([]);
   const [resultCards, setCards] = useState([]);
+
+	function deleteClicked (id: string) {
+    confirmAlert({
+			title: 'Title',
+			message: 'Message',
+			buttons: [
+				{
+					label: 'Yes',
+					onClick: () => {
+						axios.delete(getApiDomain() + getApiVersion() + "/group/" + id)
+						.then(function (response) {
+							if (response.statusText !== "OK") {
+								throw Error(response.statusText);
+							}
+							window.location.reload();
+						})
+						.catch(function (error) {
+							console.log(error);
+						});
+					}
+				},
+				{
+					label: 'No',
+					onClick: () => alert('Click No')
+				}
+			],
+			closeOnEscape: true,
+			closeOnClickOutside: true,
+		});
+  }
 
 	useEffect(() => {
     // Create an scoped async function in the hook
@@ -39,9 +70,9 @@ function Group (props: IProps) {
 						<td>{group.name}</td>
 						<td>{group.description}</td>
 						<td>{group.type}</td>
-						<td><button className="button is-info is-small">Members</button></td>
-						<td><button className="button is-success is-small">Edit</button></td>
-						<td><button className="button is-danger is-small">Delete</button></td>
+						<td><button className="button is-info">Members</button></td>
+						<td><button className="button is-success">Edit</button></td>
+						<td><button onClick={() => deleteClicked(group.id)} className="button is-danger" >Delete</button></td>
 					</tr>
 				);
 			}
@@ -52,8 +83,8 @@ function Group (props: IProps) {
 
 	return (
     <div className="container">
-      <div className="columns is-centered">
-				<div className="box">
+      
+				<div className="block">
 					<div className="card">
 						<header className="card-header">
 							<p className="card-header-title">
@@ -87,25 +118,26 @@ function Group (props: IProps) {
 					</div>
 
         </div>
-      </div>
+      
 
-      <div className="box">
-				<table className="table">
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Description</th>
-							<th>Type</th>
-							<th><button className="button is-link">Create</button></th>
-							<th></th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						{resultCards}
-					</tbody>
-				</table>
-      </div>
+				<div className="block">
+					<table className="table">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+								<th>Type</th>
+								<th><button className="button is-link">Create</button></th>
+								<th></th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{resultCards}
+						</tbody>
+					</table>
+				</div>
+			
     </div>
   );
 }
