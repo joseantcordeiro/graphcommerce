@@ -1,10 +1,8 @@
-import { OnGlobalQueueCompleted, OnQueueActive, Process, Processor } from '@nestjs/bull';
+import { OnQueueActive, OnQueueCompleted, Process, Processor } from '@nestjs/bull';
 import { Inject } from '@nestjs/common';
 import { Job } from 'bull';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-/** var sharp = require('sharp');
-var request = require('request').defaults({encoding: null}); */
 
 @Processor('person')
 export class PersonProcessor {
@@ -45,7 +43,7 @@ export class PersonProcessor {
 		this.logger.info(`[PersonProcessor] Job ${job.id}-${job.name} started. Data:`, job.data);
 	}
 
-	@OnGlobalQueueCompleted()
+	@OnQueueCompleted()
 	async onGlobalCompleted(jobId: number, result: any) {
 		// const job = await this.immediateQueue.getJob(jobId);
 		this.logger.info('[PersonProcessor] (Global) on completed: job ', jobId, ' -> result: ', result);

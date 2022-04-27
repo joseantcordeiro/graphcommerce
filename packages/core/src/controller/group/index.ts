@@ -29,6 +29,7 @@ import { SessionContainer } from 'supertokens-node/recipe/session';
 @UseInterceptors(CacheInterceptor)
 export class GroupController {
   	constructor(@InjectQueue('search') private readonly searchQueue: Queue,
+		@InjectQueue('member') private readonly memberQueue: Queue,
 		private readonly groupService: GroupService) {}
 
   @Get(':groupId')
@@ -121,5 +122,26 @@ export class GroupController {
 			}
 		}
 		throw new HttpException('Group couldn\'t be deleted', HttpStatus.NOT_MODIFIED);
+	}
+
+	@Post(':groupId/join/:memberId')
+	@UseGuards(AuthGuard)
+	@Roles(Role.MANAGE_ORGANIZATION)
+	@UseGuards(RolesGuard)
+	async joinGroup(@Session() session: SessionContainer,
+		@Param('groupId') groupId: string, @Param('memberId') memberId: string) {
+		const userId = session.getUserId();
+		const groups = await this.groupService.join(userId, memberId, groupId);
+		if (Array.isArray(groups)) {
+			this.memberQueue.add('join', {
+				objectType: 'group',
+				memberId: memberId,
+				object: groups.map(m => m.toJson()),
+			});
+			return {
+				results: groups.map(m => m.toJson()),
+			};
+		}
+		throw new HttpException('Group couldn\'t be updated', HttpStatus.NOT_MODIFIED);
 	}
 }

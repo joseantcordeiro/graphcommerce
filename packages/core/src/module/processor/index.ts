@@ -7,6 +7,7 @@ import { PictureProcessor } from '../../processor/picture';
 import { OrganizationProcessor } from '../../processor/organization';
 import { RegionProcessor } from '../../processor/region';
 import { ChannelService } from '../../service/channel';
+import { MemberProcessor } from '../../processor/member';
 
 @Module({
   imports: [
@@ -28,6 +29,9 @@ import { ChannelService } from '../../service/channel';
 		BullModule.registerQueue({
       name: 'region',
     }),
+		BullModule.registerQueue({
+      name: 'member',
+    }),
   ],
   controllers: [],
   providers: [PersonProcessor,
@@ -35,6 +39,7 @@ import { ChannelService } from '../../service/channel';
 		PictureProcessor,
 		SearchProcessor,
 		OrganizationProcessor,
+		MemberProcessor,
 		RegionProcessor,
 		ChannelService
 	],

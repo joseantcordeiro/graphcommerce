@@ -84,4 +84,18 @@ export class GroupService {
     );
 		return res.records.length ? res.records.map((row) => new Group(row.get('g'))) : false;
   } 
+
+	async join(userId: string, memberId: string, groupId: string): Promise<Group[] | any> {
+		const res = await this.neo4jService.write(
+			`
+			MATCH (p:Person {id: $$memberId}), (g:Group {id: $groupId})
+			CREATE (p)-[:MEMBER_IN { addedBy: $userId, createdAt: datetime(), active: true, deleted: false }]->(g)
+			RETURN g
+			`,
+			{
+				userId, memberId, groupId,
+			},
+		);
+		return res.records.length ? res.records.map((row) => new Group(row.get('g'))) : false;
+	}
 }

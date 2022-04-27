@@ -8,6 +8,9 @@ import { BullModule } from '@nestjs/bull';
 		BullModule.registerQueue({
       name: 'search',
     }),
+		BullModule.registerQueue({
+      name: 'member',
+    }),
 	],
   providers: [GroupService],
   controllers: [GroupController],
